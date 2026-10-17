@@ -115,6 +115,12 @@
     #composer { padding:10px 12px 12px; }
     #empty .cards { grid-template-columns:1fr; }
   }
+
+  .msg.bot.err .ans { color:#9a3f2c; }
+  .conv.active { background:#e2ddcf; color:var(--ink); }
+  #col { gap:30px; }
+  .msg.bot { font-size:15.5px; }
+  .msg.bot.thinking .dot { margin-right:10px; }
 </style>
 </head>
 <body>
@@ -355,9 +361,11 @@ function addMsg(role, text, payload) {
   return m;
 }
 
+let THINK_TIMER = null;
 async function ask(text) {
   if (!text || !USER) return;
   const inp = document.getElementById('q'); inp.value = '';
+  document.querySelectorAll('.conv').forEach(c => c.classList.toggle('active', c.textContent === text));
   const pre = PRELOAD[text];
   if (pre) {
     addMsg('user', text);
@@ -368,17 +376,26 @@ async function ask(text) {
   addMsg('user', text);
   const thinking = addMsg('bot', 'checking the records...');
   thinking.classList.add('thinking');
-  thinking.querySelector('.ans').insertAdjacentHTML('afterbegin', '<span class="dot"></span>');
+  const ansEl = thinking.querySelector('.ans');
+  ansEl.insertAdjacentHTML('afterbegin', '<span class="dot"></span>');
+  const t0 = Date.now();
+  THINK_TIMER = setInterval(() => { ansEl.innerHTML = '<span class="dot"></span>checking the records... ' + Math.round((Date.now()-t0)/1000) + 's'; }, 1000);
+  const ctl = new AbortController();
+  const killer = setTimeout(() => ctl.abort(), 55000);
   try {
-    const r = await fetch('/api/chat', {method: 'POST', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({user_id: USER, session_id: SESSION, message: text})}).then(r => r.json());
+    const res = await fetch('/api/chat', {method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({user_id: USER, session_id: SESSION, message: text}), signal: ctl.signal});
+    const r = await res.json().catch(() => ({error: 'The service returned an unreadable response (HTTP ' + res.status + '). Please try again.'}));
+    clearTimeout(killer); clearInterval(THINK_TIMER);
     thinking.remove();
-    if (r.error) { addMsg('bot', r.error); return; }
+    if (r.error || !res.ok) { const m = addMsg('bot', r.error || ('Something went wrong (HTTP ' + res.status + '). Please try again.')); m.classList.add('err'); return; }
     SESSION = r.session_id;
     addMsg('bot', r.answer || '(no answer)', r);
   } catch (e) {
+    clearTimeout(killer); clearInterval(THINK_TIMER);
     thinking.remove();
-    addMsg('bot', 'network error: ' + e);
+    const msg = (e && e.name === 'AbortError') ? 'That took too long and timed out - the service may be busy. Please try again.' : 'Network error - please check your connection and try again.';
+    const m = addMsg('bot', msg); m.classList.add('err');
   } finally {
     document.getElementById('send').disabled = false;
     document.getElementById('q').focus();

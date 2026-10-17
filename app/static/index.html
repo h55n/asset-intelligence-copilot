@@ -93,14 +93,19 @@
   .say.copilot .txt { color:var(--ivory); font-size:20px; line-height:1.5; font-family:var(--sans); font-weight:400; }
   .say.copilot .txt b { color:#fff; }
 
-  footer { background:var(--dark); color:var(--ivory); margin-top:120px; padding:100px 28px 48px; text-align:center; }
-  footer .big { font:400 clamp(44px,6vw,84px)/1.05 var(--serif); }
-  footer .big a { text-decoration:none; }
-  footer .big a:hover { font-style:italic; }
-  footer .row { display:flex; gap:30px; justify-content:center; margin-top:36px; }
-  footer .row a { font:500 13px var(--sans); color:#c9bcae; text-decoration:none; }
-  footer .row a:hover { color:#fff; }
-  footer .fine { margin-top:80px; font:400 11.5px var(--sans); color:#7d6f61; letter-spacing:.06em; }
+  footer { background:var(--dark); color:var(--ivory); margin-top:120px; padding:110px 28px 40px; }
+  footer .kick { font:500 11px var(--sans); letter-spacing:.24em; text-transform:uppercase; color:#a89a89; text-align:center; }
+  footer .cta { font:400 clamp(38px,5.4vw,72px)/1.08 var(--serif); text-align:center; max-width:840px; margin:20px auto 0; }
+  footer .cta em { font-style:italic; color:#d98d63; }
+  footer .ctabtn { display:block; width:max-content; margin:36px auto 0; background:var(--ivory); color:var(--dark); border-radius:999px; padding:15px 34px; font:500 14px var(--sans); text-decoration:none; }
+  footer .ctabtn:hover { background:#ffffff; }
+  footer .cols { display:flex; justify-content:center; gap:100px; margin:90px auto 0; max-width:900px; }
+  footer .col h4 { font:500 10.5px var(--sans); letter-spacing:.18em; text-transform:uppercase; color:#8d7f6e; margin-bottom:14px; }
+  footer .col a, footer .col span { display:block; font:400 13.5px var(--sans); color:#d8cebf; text-decoration:none; padding:5px 0; }
+  footer .col a:hover { color:#ffffff; }
+  footer .giant { font:400 clamp(56px,11vw,164px)/0.95 var(--serif); text-align:center; margin-top:100px; color:#453b30; white-space:nowrap; }
+  footer .giant em { font-style:italic; color:#5a4d3e; }
+  footer .fbar { display:flex; justify-content:space-between; gap:14px; flex-wrap:wrap; margin-top:64px; padding-top:22px; border-top:1px solid #2e2620; font:400 11px var(--sans); color:#8d7f6e; letter-spacing:.05em; }
 
   @media (max-width:760px) {
     .bar { padding:18px 18px; }
@@ -119,7 +124,9 @@
     .card-img { aspect-ratio:4/3; }
     .step { grid-template-columns:1fr; gap:10px; padding:26px 0; }
     .convo { grid-template-columns:1fr; }
-    footer { padding:70px 18px 36px; margin-top:80px; }
+    footer { padding:80px 18px 30px; margin-top:80px; }
+    footer .cols { gap:40px; flex-wrap:wrap; }
+    footer .giant { white-space:normal; margin-top:70px; }
   }
 </style>
 </head>
@@ -210,12 +217,16 @@
 </section>
 
 <footer>
-  <div class="big"><a href="/chat">Open the copilot</a></div>
-  <div class="row">
-    <a href="/chat">Chat</a>
-    <a href="https://github.com/h55n/asset-intelligence-copilot">Source</a>
+  <div class="kick">Asset Intelligence Copilot</div>
+  <div class="cta">Your field already knows<br>the answer. <em>Ask it.</em></div>
+  <a class="ctabtn" href="/chat">Open the copilot &rarr;</a>
+  <div class="cols">
+    <div class="col"><h4>Product</h4><a href="/chat">Chat</a><a href="/chat?q=Show%20a%20map%20of%20all%20wells%20that%20are%20down">Live map</a><a href="/chat?q=Show%20a%20heatmap%20of%20spills%20by%20area%20and%20month">Spill heatmap</a></div>
+    <div class="col"><h4>Project</h4><a href="https://github.com/h55n/asset-intelligence-copilot">Source code</a><a href="https://github.com/h55n/asset-intelligence-copilot/blob/main/docs/writeup-page1.md">Write-up</a><a href="https://github.com/h55n/asset-intelligence-copilot/blob/main/README.md">README</a></div>
+    <div class="col"><h4>Built at</h4><span>FlytBase &times; AHC</span><span>Hack Day</span><span>Pune &middot; October 2026</span></div>
   </div>
-  <div class="fine">Asset Intelligence Copilot &middot; open source, MIT &middot; answers verified against the records</div>
+  <div class="giant">Asset <em>Intelligence</em></div>
+  <div class="fbar"><span>&copy; 2026 Asset Intelligence Copilot</span><span>Open source &middot; MIT license</span><span>Answers verified against the records</span></div>
 </footer>
 
 </body>
