@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Asset Intelligence Copilot</title>
+<style>
+  :root { --bg:#0f1419; --panel:#1a212b; --line:#2a3442; --text:#e6edf3; --dim:#8b98a9; --accent:#4fa3ff; --warn:#ffb454; --bad:#ff6b6b; --good:#4fd18b; }
+  * { box-sizing: border-box; margin: 0; }
+  body { font-family: "Segoe UI", system-ui, sans-serif; background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; }
+  header { display: flex; align-items: center; gap: 14px; padding: 10px 18px; background: var(--panel); border-bottom: 1px solid var(--line); }
+  header h1 { font-size: 16px; font-weight: 600; }
+  header .sub { color: var(--dim); font-size: 12px; }
+  header select { margin-left: auto; background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; font-size: 13px; }
+  #chat { flex: 1; overflow-y: auto; padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+  .msg { max-width: 860px; width: fit-content; padding: 12px 16px; border-radius: 12px; line-height: 1.5; font-size: 14px; }
+  .msg.user { align-self: flex-end; background: #23405e; }
+  .msg.bot { align-self: flex-start; background: var(--panel); border: 1px solid var(--line); min-width: 320px; }
+  .msg.bot .who { font-size: 11px; color: var(--dim); margin-bottom: 6px; }
+  .viz { margin-top: 10px; }
+  .viz .vt { font-size: 12px; color: var(--dim); margin-bottom: 6px; }
+  table.data { border-collapse: collapse; font-size: 13px; }
+  table.data th, table.data td { border: 1px solid var(--line); padding: 5px 10px; text-align: left; }
+  table.data th { background: #222c3a; }
+  .card { background: #222c3a; border: 1px solid var(--line); border-radius: 10px; padding: 14px 18px; display: inline-block; }
+  .card .big { font-size: 22px; font-weight: 700; margin: 4px 0; }
+  .card .ok { color: var(--good); } .card .down { color: var(--bad); }
+  .cites { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; }
+  .cite { font-size: 11px; background: #253448; border: 1px solid var(--line); color: var(--accent); padding: 2px 8px; border-radius: 10px; }
+  canvas { background: #10161d; border: 1px solid var(--line); border-radius: 8px; max-width: 100%; }
+  #composer { display: flex; gap: 10px; padding: 12px 18px; background: var(--panel); border-top: 1px solid var(--line); }
+  #composer input { flex: 1; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; color: var(--text); padding: 12px 14px; font-size: 14px; }
+  #composer button { background: var(--accent); border: 0; color: #06121f; font-weight: 600; padding: 0 22px; border-radius: 8px; cursor: pointer; }
+  .thinking { color: var(--dim); font-style: italic; }
+  .err { color: var(--bad); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Asset Intelligence Copilot</h1>
+  <span class="sub">ask about wells, downtime, spills, repairs, compliance</span>
+  <select id="userPicker"></select>
+</header>
+<div id="chat"></div>
+<div id="composer">
+  <input id="q" placeholder="Ask a question, or tell the copilot something to remember..." autofocus>
+  <button id="send">Ask</button>
+</div>
+<script>
+let USER = null, SESSION = null;
+const chat = document.getElementById('chat');
+
+async function loadUsers() {
+  const r = await fetch('/api/users').then(r => r.json());
+  const sel = document.getElementById('userPicker');
+  sel.innerHTML = r.users.map(u => `<option value="${u.user_id}">${u.name} - ${u.role.replace(/_/g,' ')}</option>`).join('');
+  USER = localStorage.getItem('aic_user') || r.users[0].user_id;
+  sel.value = USER;
+  sel.onchange = () => { USER = sel.value; SESSION = null; localStorage.setItem('aic_user', USER); };
+}
+
+function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+
+function md(t) {
+  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;')
+          .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
+          .replace(/\n/g, '<br>');
+}
+
+function renderViz(v) {
+  if (!v || !v.type || v.type === 'none') return null;
+  const wrap = el('div', 'viz');
+  if (v.title) wrap.appendChild(el('div', 'vt', v.title));
+  const d = v.data || {};
+  if (v.type === 'card') {
+    const c = el('div', 'card');
+    const prod = d.producing ?? d.producing_now;
+    if (prod !== undefined) c.appendChild(el('div', 'big ' + (prod ? 'ok' : 'down'), prod ? 'PRODUCING' : 'NOT PRODUCING'));
+    for (const [k, val] of Object.entries(d)) {
+      if (['producing','producing_now'].includes(k)) continue;
+      const row = el('div'); row.style.fontSize = '13px';
+      row.innerHTML = `<span style="color:var(--dim)">${k.replace(/_/g,' ')}:</span> ${val}`;
+      c.appendChild(row);
+    }
+    wrap.appendChild(c);
+  } else if (v.type === 'table') {
+    const t = el('table', 'data');
+    const tr = el('tr'); (d.columns||[]).forEach(c => tr.appendChild(el('th', null, c))); t.appendChild(tr);
+    (d.rows||[]).forEach(r => { const tr2 = el('tr'); r.forEach(c => tr2.appendChild(el('td', null, String(c)))); t.appendChild(tr2); });
+    wrap.appendChild(t);
+  } else if (v.type === 'line') {
+    const cv = el('canvas'); cv.width = 760; cv.height = 300; wrap.appendChild(cv);
+    drawLine(cv, d);
+  } else if (v.type === 'bar') {
+    const cv = el('canvas'); cv.width = 620; cv.height = 300; wrap.appendChild(cv);
+    drawBar(cv, d);
+  } else if (v.type === 'map') {
+    const cv = el('canvas'); cv.width = 640; cv.height = 420; wrap.appendChild(cv);
+    drawMap(cv, d);
+  } else if (v.type === 'heatmap') {
+    const cv = el('canvas'); cv.width = 760; cv.height = 60 + 30 * ((d.rows||[]).length); wrap.appendChild(cv);
+    drawHeat(cv, d);
+  }
+  return wrap;
+}
+
+const COLORS = ['#4fa3ff','#ffb454','#4fd18b','#ff6b6b'];
+function axes(ctx, w, h, pad) {
+  ctx.strokeStyle = '#2a3442'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(pad, 10); ctx.lineTo(pad, h-pad); ctx.lineTo(w-10, h-pad); ctx.stroke();
+}
+function drawLine(cv, d) {
+  const ctx = cv.getContext('2d'), w = cv.width, h = cv.height, pad = 42;
+  const xs = d.x || [], series = d.series || [];
+  const allY = series.flatMap(s => s.y);
+  const min = Math.min(...allY) - 2, max = Math.max(...allY) + 2;
+  const X = i => pad + (w - pad - 20) * (xs.length < 2 ? 0 : i / (xs.length - 1));
+  const Y = v => h - pad - (h - pad - 20) * (v - min) / (max - min || 1);
+  axes(ctx, w, h, pad);
+  ctx.fillStyle = '#8b98a9'; ctx.font = '10px sans-serif';
+  for (let i = 0; i < xs.length; i += Math.ceil(xs.length/8)) ctx.fillText(xs[i].slice(5), X(i)-12, h-pad+14);
+  for (let v = Math.ceil(min); v <= max; v += Math.ceil((max-min)/5)) ctx.fillText(v, 6, Y(v)+3);
+  series.forEach((s, si) => {
+    ctx.strokeStyle = COLORS[si % 4]; ctx.lineWidth = 2; ctx.beginPath();
+    s.y.forEach((v, i) => i ? ctx.lineTo(X(i), Y(v)) : ctx.moveTo(X(i), Y(v))); ctx.stroke();
+    ctx.fillStyle = COLORS[si % 4]; ctx.fillText(s.label, pad + 8, 22 + 13*si);
+  });
+  (d.markers || []).forEach(mk => {
+    const i = xs.indexOf(mk.x); if (i < 0) return;
+    ctx.fillStyle = '#ff6b6b'; ctx.beginPath(); ctx.arc(X(i), 22, 4, 0, 7); ctx.fill();
+    ctx.fillText(mk.label || 'not producing', X(i) + 8, 26);
+  });
+}
+function drawBar(cv, d) {
+  const ctx = cv.getContext('2d'), w = cv.width, h = cv.height, pad = 42;
+  const labels = d.labels || [], vals = d.values || [];
+  const max = Math.max(...vals, 1);
+  axes(ctx, w, h, pad);
+  const bw = (w - pad - 30) / vals.length;
+  vals.forEach((v, i) => {
+    const bh = (h - pad - 30) * v / max;
+    ctx.fillStyle = COLORS[i % 4];
+    ctx.fillRect(pad + i*bw + 8, h - pad - bh, bw - 16, bh);
+    ctx.fillStyle = '#e6edf3'; ctx.font = '11px sans-serif';
+    ctx.fillText(v, pad + i*bw + bw/2 - 8, h - pad - bh - 6);
+    ctx.fillStyle = '#8b98a9'; ctx.fillText(labels[i].replace('WELL-','W'), pad + i*bw + 8, h - pad + 14);
+  });
+}
+function drawMap(cv, d) {
+  const ctx = cv.getContext('2d'), w = cv.width, h = cv.height;
+  const pins = d.pins || [];
+  if (!pins.length) return;
+  const lats = pins.map(p => p.lat), lons = pins.map(p => p.lon);
+  const pad = 40;
+  const minLa = Math.min(...lats) - 0.01, maxLa = Math.max(...lats) + 0.01;
+  const minLo = Math.min(...lons) - 0.01, maxLo = Math.max(...lons) + 0.01;
+  const X = lo => pad + (w - 2*pad) * (lo - minLo) / (maxLo - minLo || 1);
+  const Y = la => h - pad - (h - 2*pad) * (la - minLa) / (maxLa - minLa || 1);
+  ctx.strokeStyle = '#22303f';
+  for (let i = 0; i < 8; i++) { ctx.beginPath(); ctx.moveTo(pad + i*(w-2*pad)/8, pad); ctx.lineTo(pad + i*(w-2*pad)/8, h-pad); ctx.stroke();
+                                ctx.beginPath(); ctx.moveTo(pad, pad + i*(h-2*pad)/8); ctx.lineTo(w-pad, pad + i*(h-2*pad)/8); ctx.stroke(); }
+  pins.forEach(p => {
+    ctx.fillStyle = '#ff6b6b'; ctx.beginPath(); ctx.arc(X(p.lon), Y(p.lat), 7, 0, 7); ctx.fill();
+    ctx.fillStyle = '#e6edf3'; ctx.font = '11px sans-serif';
+    ctx.fillText(p.well + (p.label ? ' (' + p.label + ')' : ''), X(p.lon) + 10, Y(p.lat) + 4);
+  });
+}
+function drawHeat(cv, d) {
+  const ctx = cv.getContext('2d');
+  const rows = d.rows || [], cols = d.cols || [], vals = d.values || [];
+  const cw = Math.min(60, (cv.width - 170) / cols.length), ch = 28, x0 = 160, y0 = 34;
+  const max = Math.max(...vals.flat(), 1);
+  ctx.font = '11px sans-serif';
+  cols.forEach((c, j) => { ctx.fillStyle = '#8b98a9'; ctx.fillText(c, x0 + j*cw + 8, 22); });
+  rows.forEach((r, i) => {
+    ctx.fillStyle = '#8b98a9'; ctx.fillText(r, 8, y0 + i*ch + 18);
+    (vals[i] || []).forEach((v, j) => {
+      const a = v / max;
+      ctx.fillStyle = `rgba(255, ${Math.round(180 - 120*a)}, ${Math.round(80 - 40*a)}, ${0.15 + 0.85*a})`;
+      ctx.fillRect(x0 + j*cw, y0 + i*ch, cw - 2, ch - 2);
+      ctx.fillStyle = a > 0.5 ? '#10161d' : '#e6edf3';
+      ctx.fillText(v, x0 + j*cw + cw/2 - 6, y0 + i*ch + 18);
+    });
+  });
+}
+
+function addMsg(role, text, payload) {
+  const m = el('div', 'msg ' + (role === 'user' ? 'user' : 'bot'));
+  if (role !== 'user') m.appendChild(el('div', 'who', 'copilot'));
+  const body = el('div'); body.innerHTML = md(text); m.appendChild(body);
+  if (payload && payload.viz) { const v = renderViz(payload.viz); if (v) m.appendChild(v); }
+  if (payload && payload.citations && payload.citations.length) {
+    const cs = el('div', 'cites');
+    payload.citations.forEach(c => cs.appendChild(el('span', 'cite', c)));
+    m.appendChild(cs);
+  }
+  if (payload && payload.follow_up) { const f = el('div'); f.style.marginTop = '8px'; f.style.color = 'var(--warn)'; f.innerHTML = md(payload.follow_up); m.appendChild(f); }
+  chat.appendChild(m); chat.scrollTop = chat.scrollHeight;
+  return m;
+}
+
+async function send() {
+  const inp = document.getElementById('q');
+  const text = inp.value.trim(); if (!text || !USER) return;
+  inp.value = '';
+  addMsg('user', text);
+  const thinking = addMsg('bot', 'checking the records...');
+  thinking.classList.add('thinking');
+  try {
+    const r = await fetch('/api/chat', {method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({user_id: USER, session_id: SESSION, message: text})}).then(r => r.json());
+    thinking.remove();
+    if (r.error) { addMsg('bot', r.error).classList.add('err'); return; }
+    SESSION = r.session_id;
+    addMsg('bot', r.answer || '(no answer)', r);
+  } catch (e) {
+    thinking.remove();
+    addMsg('bot', 'network error: ' + e).classList.add('err');
+  }
+}
+document.getElementById('send').onclick = send;
+document.getElementById('q').addEventListener('keydown', e => { if (e.key === 'Enter') send(); });
+loadUsers();
+</script>
+</body>
+</html>

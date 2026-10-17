@@ -150,6 +150,8 @@ class Agent:
         if m:
             try:
                 out = json.loads(m.group(0))
+                if isinstance(out, dict) and "arguments" in out and isinstance(out["arguments"], dict):
+                    out = out["arguments"]  # harmony-style JSON tool wrapper
                 out.setdefault("viz", {"type": "none"})
                 out.setdefault("citations", [])
                 out["calls"] = calls_made
