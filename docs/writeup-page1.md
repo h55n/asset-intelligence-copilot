@@ -77,11 +77,29 @@ below. Results carry evidence IDs; the agent must cite them.
 
 ## Generative UI
 
-The agent returns the answer plus a visualisation spec: status card for one
-well, table for lists, line chart for change over time (with not-producing
-markers), bar chart for comparisons, map for locations, heatmap for two
-dimensions. A user-named visual wins. Rendered inline in the chat, built
-only from tool data.
+The challenge is two problems, not one: get the right data, then show it the
+right way. The second half is a first-class part of the pipeline, not a
+decoration. For every answer the agent returns two things: the prose answer
+and a visualisation spec - a small, strict JSON object with a chart type and
+a data payload built only from tool results. The chat client renders the
+spec into a real, interactive visual inline with the answer.
+
+Six visual forms, chosen by the shape of the question: a status card for one
+well (producing / not producing with the rule that decided it), a table for
+lists and rankings, a line chart for change over time (with not-producing
+markers on the days a well was down), a bar chart for comparisons across
+wells, a map for anything geographic (down wells as pins with labels), and a
+heatmap for two-dimensional questions (spills by area and month). When the
+user names a visual - "show a map", "as a heatmap" - that request wins over
+the agent's own choice.
+
+Two rules keep the visuals honest. First, they are drawn only from tool
+data: a chart can never show a number the tools did not return, so the
+visual layer cannot hallucinate. Second, the spec is validated before
+rendering - unknown types, empty payloads and malformed series fall back to
+the table/prose forms instead of drawing something wrong. The same spec
+feeds the demo and the preloaded example conversations on the site, so what
+you see in the write-up screenshots is exactly what the chat renders.
 
 ## Models and cost
 

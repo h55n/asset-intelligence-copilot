@@ -22,53 +22,76 @@
   .pill { display:inline-block; background:var(--ink); color:var(--ivory); text-decoration:none;
           font:500 13.5px var(--sans); padding:12px 24px; border-radius:999px; border:0; cursor:pointer; }
   .pill:hover { background:#33241a; }
-  .pill.ghost { background:transparent; color:var(--ink); border:1px solid var(--ink); }
-  .pill.ghost:hover { background:var(--ink); color:var(--ivory); }
   .pill.light { background:var(--ivory); color:var(--ink); }
   .pill.light:hover { background:#fff; }
 
-  .hero { text-align:center; padding:8vh 24px 60px; }
+  .hero { text-align:center; padding:7vh 24px 58px; }
   .kicker { font:500 11.5px var(--sans); letter-spacing:.22em; text-transform:uppercase; color:var(--grey); }
   .hero h1 { font:400 clamp(54px, 8.6vw, 118px)/1.02 var(--serif); letter-spacing:-.01em; margin:26px 0 30px; }
   .hero h1 em { font-style:italic; }
-  .hero p.sub { max-width:560px; margin:0 auto; font-size:15px; line-height:1.75; color:var(--ink-soft); }
-  .marks { display:flex; flex-wrap:wrap; gap:14px 34px; justify-content:center; margin-top:44px; }
+  .hero p.sub { max-width:580px; margin:0 auto; font-size:15.5px; line-height:1.75; color:var(--ink-soft); }
+  .marks { display:flex; flex-wrap:wrap; gap:14px 34px; justify-content:center; margin-top:42px; }
   .marks span { font:500 11px var(--sans); letter-spacing:.16em; text-transform:uppercase; color:var(--ink-soft); display:flex; align-items:center; gap:8px; }
   .marks i { width:6px; height:6px; border-radius:50%; background:var(--accent); display:inline-block; }
 
   .imgwrap { margin:0 24px; border-radius:20px; overflow:hidden; }
   .imgwrap img { width:100%; display:block; aspect-ratio:16/8.2; object-fit:cover; }
-  .cap { display:flex; justify-content:space-between; margin:12px 30px 0; font:500 11px var(--sans); letter-spacing:.14em; text-transform:uppercase; color:var(--grey); }
+  .cap { display:flex; justify-content:space-between; gap:12px; margin:12px 30px 0; font:500 11px var(--sans); letter-spacing:.14em; text-transform:uppercase; color:var(--grey); }
+
+  .stats { display:grid; grid-template-columns:repeat(4,1fr); max-width:1240px; margin:70px auto 0; padding:0 28px; }
+  .stat { border-left:1px solid var(--line); padding:6px 26px; }
+  .stat:first-child { border-left:0; padding-left:0; }
+  .stat .n { font:400 clamp(34px,3.6vw,50px)/1 var(--serif); }
+  .stat .n sup { font-size:.42em; color:var(--accent); }
+  .stat .d { margin-top:8px; font:400 12.5px/1.55 var(--sans); color:var(--ink-soft); }
 
   section.block { padding:120px 28px 40px; max-width:1240px; margin:0 auto; }
   .label { font:500 11.5px var(--sans); letter-spacing:.22em; text-transform:uppercase; color:var(--grey); margin-bottom:22px; }
-  h2.serif { font:400 clamp(38px, 4.6vw, 62px)/1.08 var(--serif); letter-spacing:-.01em; max-width:720px; }
+  h2.serif { font:400 clamp(38px, 4.6vw, 62px)/1.08 var(--serif); letter-spacing:-.01em; max-width:760px; }
+  .lede { margin-top:20px; max-width:640px; font-size:15px; line-height:1.8; color:var(--ink-soft); }
   .block .pill { margin-top:30px; }
 
   .ways { display:grid; grid-template-columns:1fr 1fr; gap:0 64px; margin-top:70px; border-top:1px solid var(--line); }
   .way { display:flex; gap:26px; padding:30px 0; border-bottom:1px solid var(--line); align-items:baseline; }
-  .way .n { font:400 13px var(--serif); font-style:italic; color:var(--grey); min-width:30px; }
+  .way .n { font:italic 400 13px var(--serif); color:var(--grey); min-width:30px; }
   .way h3 { font:600 15px var(--sans); margin-bottom:8px; }
   .way p { font:400 21px/1.35 var(--serif); color:var(--ink-soft); }
 
-  .dark { background:var(--dark); color:var(--ivory); margin-top:110px; padding:110px 28px 90px; }
+  .dark { background:var(--dark); color:var(--ivory); margin-top:110px; padding:110px 28px 100px; }
   .dark .inner { max-width:1240px; margin:0 auto; }
   .dark .label { color:#9d8f80; }
   .dark h2.serif { color:var(--ivory); max-width:860px; }
+  .dark .lede { color:#c9bcae; }
   .cards { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-top:64px; }
   .card-img { position:relative; border-radius:16px; overflow:hidden; aspect-ratio:4/4.6; }
   .card-img img { width:100%; height:100%; object-fit:cover; display:block; transition:transform .6s ease; }
   .card-img:hover img { transform:scale(1.04); }
   .card-img .t { position:absolute; left:22px; bottom:20px; right:22px; font:400 26px/1.15 var(--serif); color:#fff; text-shadow:0 2px 18px rgba(0,0,0,.45); }
 
+  .steps { margin-top:70px; border-top:1px solid var(--line); }
+  .step { display:grid; grid-template-columns:90px 1fr 1.2fr; gap:32px; padding:34px 0; border-bottom:1px solid var(--line); align-items:baseline; }
+  .step .n { font:italic 400 15px var(--serif); color:var(--grey); }
+  .step h3 { font:400 clamp(24px,2.6vw,32px)/1.2 var(--serif); }
+  .step p { font-size:14.5px; line-height:1.8; color:var(--ink-soft); }
+  .step p b { color:var(--ink); font-weight:600; }
+
   .example { background:var(--card); border-radius:20px; padding:clamp(30px,5vw,64px); margin-top:64px; }
   .example .q { font:400 clamp(24px,3vw,34px)/1.25 var(--serif); margin:14px 0 22px; }
-  .example .a { font-size:14.5px; line-height:1.8; color:var(--ink-soft); max-width:760px; }
+  .example .a { font-size:14.5px; line-height:1.8; color:var(--ink-soft); max-width:780px; }
   .example .a b { color:var(--ink); }
   .chips { display:flex; flex-wrap:wrap; gap:8px; margin-top:26px; align-items:center; }
   .chips .lbl { font:500 10.5px var(--sans); letter-spacing:.16em; text-transform:uppercase; color:var(--grey); margin-right:6px; }
   .chip { font:500 11px ui-monospace,SFMono-Regular,monospace; background:#f2eee6; border:1px solid var(--line); color:var(--ink-soft); padding:6px 12px; border-radius:999px; }
   .example .go { display:inline-block; margin-top:28px; font:500 13.5px var(--sans); color:var(--accent); text-decoration:none; border-bottom:1px solid var(--accent); padding-bottom:2px; }
+
+  .convo { margin-top:64px; display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  .say { background:var(--card); border:1px solid var(--line); border-radius:18px; padding:26px 28px; }
+  .say .who { font:500 10.5px var(--sans); letter-spacing:.16em; text-transform:uppercase; color:var(--grey); margin-bottom:12px; }
+  .say .txt { font:400 22px/1.35 var(--serif); }
+  .say.copilot { background:var(--dark); border-color:var(--dark); grid-column:1 / -1; }
+  .say.copilot .who { color:#9d8f80; }
+  .say.copilot .txt { color:var(--ivory); font-size:20px; line-height:1.5; font-family:var(--sans); font-weight:400; }
+  .say.copilot .txt b { color:#fff; }
 
   footer { background:var(--dark); color:var(--ivory); margin-top:120px; padding:100px 28px 48px; text-align:center; }
   footer .big { font:400 clamp(44px,6vw,84px)/1.05 var(--serif); }
@@ -81,15 +104,21 @@
 
   @media (max-width:760px) {
     .bar { padding:18px 18px; }
-    .hero { padding:6vh 18px 44px; }
+    .word { letter-spacing:.22em; font-size:11.5px; }
+    .hero { padding:5vh 18px 42px; }
     .imgwrap { margin:0 14px; border-radius:16px; }
     .imgwrap img { aspect-ratio:4/3.4; }
     .cap { margin:10px 18px 0; }
+    .stats { grid-template-columns:1fr 1fr; gap:26px 0; padding:0 18px; margin-top:50px; }
+    .stat { padding:0 18px; }
+    .stat:nth-child(odd) { border-left:0; padding-left:0; }
     section.block { padding:80px 18px 20px; }
     .ways { grid-template-columns:1fr; gap:0; margin-top:50px; }
     .dark { padding:80px 18px 64px; margin-top:80px; }
     .cards { grid-template-columns:1fr; gap:14px; margin-top:44px; }
     .card-img { aspect-ratio:4/3; }
+    .step { grid-template-columns:1fr; gap:10px; padding:26px 0; }
+    .convo { grid-template-columns:1fr; }
     footer { padding:70px 18px 36px; margin-top:80px; }
   }
 </style>
@@ -104,7 +133,7 @@
 <header class="hero">
   <div class="kicker">Live field records &middot; 200 wells &middot; Southwest Production</div>
   <h1>Ask the field<br><em>anything.</em></h1>
-  <p class="sub">A copilot that answers from the well records themselves - inspections, temperatures, spills, repairs and compliance - and cites the exact records behind every answer.</p>
+  <p class="sub">A copilot for the people who run the field. It answers from the well records themselves - inspections, wellhead temperatures, spills, repairs and compliance - and cites the exact records behind every answer, so a number is never just a number.</p>
   <div class="marks">
     <span><i></i>Cited sources</span>
     <span><i></i>Cross-session memory</span>
@@ -116,15 +145,23 @@
 <div class="imgwrap"><img src="/static/img/pumpjack.jpg" alt="Pumpjack in the field"></div>
 <div class="cap"><span>Northeast Block 8, live records</span><span>200 wells &middot; streaming</span></div>
 
+<div class="stats">
+  <div class="stat"><div class="n">200</div><div class="d">wells on record, across four geographic blocks</div></div>
+  <div class="stat"><div class="n">4<sup>yrs</sup></div><div class="d">of inspections, repairs, spills and operator notes</div></div>
+  <div class="stat"><div class="n">2</div><div class="d">temperature rules - 15&deg;C for T200 pumps, 20&deg;C for T350</div></div>
+  <div class="stat"><div class="n">24<sup>h</sup></div><div class="d">containment window every spill is checked against</div></div>
+</div>
+
 <section class="block">
   <div class="label">What it watches</div>
   <h2 class="serif">Four ways the copilot keeps the field honest.</h2>
+  <p class="lede">Every answer starts from the records, never from a hunch. When the records and the people disagree, the copilot keeps both on file and says so plainly.</p>
   <a class="pill" href="/chat">Start asking</a>
   <div class="ways">
-    <div class="way"><div class="n">01</div><div><h3>Production</h3><p>Which wells are producing, which are down, and exactly why - measured against each pump's own temperature rule.</p></div></div>
-    <div class="way"><div class="n">02</div><div><h3>Spills &amp; repairs</h3><p>Every spill, its volume, whether it was contained in time, and what the repair really cost.</p></div></div>
-    <div class="way"><div class="n">03</div><div><h3>Compliance</h3><p>Overdue reports, missed containment windows and broken rules, flagged against the operating procedures.</p></div></div>
-    <div class="way"><div class="n">04</div><div><h3>Memory &amp; people</h3><p>It remembers what each person told it, keeps conflicting claims on record, and says so when they disagree with the data.</p></div></div>
+    <div class="way"><div class="n">01</div><div><h3>Production</h3><p>Which wells are producing, which are down, and exactly why - measured against each pump's own temperature rule, not a guess.</p></div></div>
+    <div class="way"><div class="n">02</div><div><h3>Spills &amp; repairs</h3><p>Every spill, its volume, whether it was contained in time, and what the repair really cost - per well, per block, per month.</p></div></div>
+    <div class="way"><div class="n">03</div><div><h3>Compliance</h3><p>Overdue reports, missed containment windows and broken rules, flagged against the operating procedures they come from.</p></div></div>
+    <div class="way"><div class="n">04</div><div><h3>Memory &amp; people</h3><p>It remembers what each person told it across sessions, keeps conflicting claims on record, and says so when they disagree with the data.</p></div></div>
   </div>
 </section>
 
@@ -132,11 +169,22 @@
   <div class="inner">
     <div class="label">In the field</div>
     <h2 class="serif">Make the field so legible,<br>surprises become rare.</h2>
+    <p class="lede">A field writes its own story every day: a temperature that drifted, a spill contained an hour too late, a repair that cost twice the estimate. The copilot reads that story line by line, and tells it back to you on demand.</p>
     <div class="cards">
       <div class="card-img"><img src="/static/img/valves.jpg" alt="Valve manifold"><div class="t">Every valve, on record.</div></div>
       <div class="card-img"><img src="/static/img/tankfarm.jpg" alt="Tank farm from above"><div class="t">Spills, contained or not.</div></div>
       <div class="card-img"><img src="/static/img/field-aerial.jpg" alt="Aerial view of the field"><div class="t">The whole field, one question away.</div></div>
     </div>
+  </div>
+</section>
+
+<section class="block">
+  <div class="label">How it works</div>
+  <h2 class="serif">Ask in plain words.<br>Get the records back.</h2>
+  <div class="steps">
+    <div class="step"><div class="n">01</div><h3>Ask anything</h3><p>Type a question the way you would ask a colleague: <b>&ldquo;Is WELL-0001 producing oil? Why?&rdquo;</b> or <b>&ldquo;Any overdue spill reports?&rdquo;</b> You can also tell it field updates to remember, like a corrected temperature or a planned shut-in.</p></div>
+    <div class="step"><div class="n">02</div><h3>It checks the records</h3><p>The copilot looks up the actual inspections, temperatures, spill reports, repair orders and compliance manuals. Deterministic rules parsed from the manuals - the 15&deg;C and 20&deg;C thresholds, the 24-hour containment window - decide the verdicts, not the model's mood.</p></div>
+    <div class="step"><div class="n">03</div><h3>You get the answer, cited</h3><p>The answer comes back in plain language with the exact record IDs underneath - <b>INS-0001-0203</b>, <b>CTX-0001-003</b>, <b>T200 manual &sect;9.3</b>. Tap any citation to pull the full record and check it yourself.</p></div>
   </div>
 </section>
 
@@ -147,6 +195,17 @@
     <div class="a">WELL-0001 is <b>not producing oil</b> right now. Its latest inspection on <b>2026-10-15</b> by <b>Ryan Brooks</b> noted the pump jack was not moving, and the wellhead temperature sat 3.2&deg;C above ambient - below the 15&deg;C rule for a T200 pump. An operator note confirms the well has been shut in since 7 October for a planned rod string replacement, expected back around 20 October.</div>
     <div class="chips"><span class="lbl">Evidence</span><span class="chip">INS-0001-0203</span><span class="chip">CTX-0001-003</span><span class="chip">T200 manual &sect;9.3</span></div>
     <a class="go" href="/chat?q=Is%20WELL-0001%20producing%20oil%20right%20now%3F%20Why%3F">Ask this in the copilot &rarr;</a>
+  </div>
+</section>
+
+<section class="block">
+  <div class="label">When people disagree with the data</div>
+  <h2 class="serif">It keeps both on record -<br>and says which one the data supports.</h2>
+  <p class="lede">Field knowledge lives in people before it reaches the records. The copilot never silently picks a side: every claim is stored with its author's name, checked against the latest data, and surfaced when they conflict.</p>
+  <div class="convo">
+    <div class="say"><div class="who">Michael Turner, Monday</div><div class="txt">&ldquo;WELL-0175 has been shut in for planned work since 14 Oct.&rdquo;</div></div>
+    <div class="say"><div class="who">Tyler Hughes, Tuesday</div><div class="txt">&ldquo;WELL-0175 is running fine.&rdquo;</div></div>
+    <div class="say copilot"><div class="who">The copilot, to Tyler</div><div class="txt">Recorded - but the 15 Oct inspection by <b>Jessica Reed</b> shows the wellhead only <b>0.4&deg;C</b> above air, so WELL-0175 is <b>not producing</b>. That matches Michael's note, not yours. Both statements stay on record, yours marked <b>unconfirmed</b> - can you double-check on site?</div></div>
   </div>
 </section>
 
