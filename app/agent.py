@@ -67,9 +67,14 @@ WELL_RE = re.compile(r'WELL-\d{4}', re.I)
 class LLMError(Exception):
     pass
 
+THOUGHT_RE = re.compile(r'<thought>.*?</thought>', re.S)
+
+def _strip_thought(text):
+    return THOUGHT_RE.sub('', text or '').strip()
+
 import time as _time
 _last_call = {'at': 0.0, 'tokens': 0}
-TPM_LIMIT = 8000
+TPM_LIMIT = int(os.environ.get('LLM_TPM', '8000'))
 
 def _pace():
     """Token-bucket pacing: after a big call, wait out its share of the per-minute budget."""
@@ -85,8 +90,7 @@ def chat_completion(base_url, api_key, model, messages, tools=None, max_tokens=4
         _pace()
     body = {"model": model, "messages": messages, "max_tokens": max_tokens, "temperature": temperature}
     if tools:
-        body["tools"] = tools
-        body["tool_choice"] = "auto"
+        body["tools"] = tools  # no tool_choice: Google 500s on 'auto' with many tools
     req = urllib.request.Request(base_url.rstrip('/') + "/chat/completions",
                                  data=json.dumps(body).encode(),
                                  headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json", "User-Agent": "curl/8.0"})
@@ -99,7 +103,8 @@ def chat_completion(base_url, api_key, model, messages, tools=None, max_tokens=4
     except urllib.error.HTTPError as e:
         body = e.read().decode(errors='replace')
         try:
-            err = json.loads(body).get('error', {})
+            parsed = json.loads(body)
+            err = parsed.get('error', {}) if isinstance(parsed, dict) else {}
         except json.JSONDecodeError:
             err = {}
         if err.get('code') == 'tool_use_failed' and err.get('failed_generation'):
@@ -133,8 +138,9 @@ class Agent:
             return {"error": f"{type(e).__name__}: {e}"}
 
     def answer(self, user_name, user_id, session_id, message, history, max_rounds=10):
-        msgs = [{"role": "system", "content": SYSTEM.format(today=self.today)}]
-        msgs.append({"role": "system", "content": f"The current user is {user_name} ({user_id}). Attribute everything they tell you to them."})
+        # single system message: Google's OpenAI-compat endpoint 500s on two
+        sys_content = SYSTEM.format(today=self.today) + f"\n\nThe current user is {user_name} ({user_id}). Attribute everything they tell you to them."
+        msgs = [{"role": "system", "content": sys_content}]
         for h in history[-8:]:
             msgs.append({"role": h["role"], "content": h["text"]})
         msgs.append({"role": "user", "content": message})
@@ -156,6 +162,7 @@ class Agent:
                     continue
                 raise
             ch = resp["choices"][0]["message"]
+            ch["content"] = _strip_thought(ch.get("content"))
             if ch.get("tool_calls"):
                 msgs.append({"role": "assistant", "content": ch.get("content") or "", "tool_calls": ch["tool_calls"]})
                 for tc in ch["tool_calls"]:
