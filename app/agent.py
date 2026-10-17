@@ -124,6 +124,7 @@ class Agent:
         wells_seen = set(WELL_RE.findall(message.upper()))
         calls_made = []
         for _ in range(max_rounds):
+            self._fit_budget(msgs)
             resp = chat_completion(self.base_url, self.api_key, self.model, msgs, self.tools_json)
             ch = resp["choices"][0]["message"]
             if ch.get("tool_calls"):
@@ -138,14 +139,42 @@ class Agent:
                     calls_made.append({"tool": name, "args": args})
                     blob = json.dumps(result)
                     wells_seen.update(WELL_RE.findall(blob.upper()))
-                    if len(blob) > 24000:
-                        blob = blob[:24000] + "...[truncated]"
+                    if len(blob) > 12000:
+                        blob = blob[:12000] + "...[truncated]"
                     msgs.append({"role": "tool", "tool_call_id": tc["id"], "content": blob})
                 continue
             content = ch.get("content") or ""
             return self._parse_final(content, wells_seen, calls_made)
         return {"answer": "I could not finish checking the records in time - please rephrase or narrow the question.",
                 "viz": {"type": "none"}, "citations": [], "calls": calls_made}
+
+    BUDGET_CHARS = 26000  # ~6.5k tokens, stays under the free-tier per-minute budget
+
+    def _fit_budget(self, msgs):
+        def size():
+            return sum(len(json.dumps(m)) for m in msgs)
+        # 1. shrink old tool results first
+        for m in msgs:
+            if size() <= self.BUDGET_CHARS:
+                return
+            if m.get("role") == "tool" and len(m.get("content", "")) > 3000:
+                m["content"] = m["content"][:3000] + "...[trimmed]"
+        # 2. drop oldest history (keep the two system messages + last user msg)
+        while size() > self.BUDGET_CHARS and len(msgs) > 3:
+            for i, m in enumerate(msgs):
+                if m.get("role") == "assistant" and not m.get("tool_calls") and i < len(msgs) - 2:
+                    del msgs[i]
+                    break
+            else:
+                for i, m in enumerate(msgs):
+                    if m.get("role") == "tool":
+                        del msgs[i]
+                        break
+                else:
+                    if len(msgs) > 3:
+                        del msgs[2]
+                    else:
+                        return
 
     def _parse_final(self, content, wells_seen, calls_made):
         m = re.search(r'\{.*\}', content, re.S)

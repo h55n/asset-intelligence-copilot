@@ -76,8 +76,8 @@ class Tools:
                          'recorded_status': st['recorded_status'],
                          'last_inspected': day(st['latest_inspection']['inspected_at']) if st['latest_inspection'] else None,
                          'inspection_notes': st['latest_inspection']['notes'] if st['latest_inspection'] else '',
-                         'open_repairs': [{'maintenance_id': r['maintenance_id'], 'issue': r['issue'],
-                                           'started_at': day(r['started_at'])} for r in st['open_repairs']],
+                         'open_repairs': [{'maintenance_id': r['maintenance_id'], 'issue': r['issue'][:80],
+                                           'started_at': day(r['started_at'])} for r in st['open_repairs'][:3]],
                          'recorded_status_out_of_date': st['recorded_status_out_of_date'],
                          'evidence': [st['latest_inspection']['inspection_id']] if st['latest_inspection'] else []})
         return {'area': aname, 'count': len(rows), 'wells': rows}

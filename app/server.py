@@ -42,7 +42,7 @@ def chat(body: ChatIn):
         return JSONResponse({'error': 'unknown user'}, status_code=400)
     user = user[0]
     session = body.session_id or uuid.uuid4().hex[:12]
-    history = cp.chat_history(user['user_id'], limit=8)
+    history = cp.chat_history(user['user_id'], limit=4)
     try:
         r = agent.answer(user['name'], user['user_id'], session, body.message, history)
     except Exception as e:
