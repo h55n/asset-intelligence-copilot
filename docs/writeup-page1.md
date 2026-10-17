@@ -112,6 +112,40 @@ model can be swapped in without code changes. Retrieval is SQLite FTS +
 structured SQL - no embedding infrastructure to drift between sample and
 test data.
 
+## How I QA'd it: what broke, and how I fixed it
+
+The whole suite - all 18 example scenarios, including the multi-turn
+memory, correction and conflict chains - runs as an automated script
+against a freshly ingested database, and I read every answer against the
+expected answers by hand. Five scored runs so far. What actually broke:
+
+- **Stale server code, not bad answers.** One run showed six HTTP 500s
+  across the suite. The failures were the server process still running
+  pre-fix code, not the pipeline. Fix: the suite now always runs against a
+  clean re-ingest and a freshly started server, because the correction and
+  claim scenarios deliberately mutate the database.
+- **Cross-session memory was not triggered by phrasing.** "For the three
+  wells we discussed yesterday" came back with "I don't have access to
+  yesterday's conversation" - the model never called the recall tool. Fix:
+  a deterministic guard detects references to earlier conversation and
+  injects this user's own history into the prompt. Re-run: exact expected
+  figures (WELL-0138 $46,942; WELL-0121 $25,794; WELL-0107 $5,176), and a
+  different user asking the identical question is correctly told no such
+  conversation exists with her.
+- **A conflict slipped through the wrong door.** "WELL-0001 is back online
+  since 14 Oct" was recorded as a shared note without being checked,
+  because the conflict assessment only lived in the claims path. Fix: the
+  shared-note path now runs the same deterministic assessment and the tool
+  result instructs the reply to surface the conflict and keep both
+  statements on record. Verified live: the copilot now answers with the
+  15 Oct inspection and the ~20 Oct expected return, and marks the claim
+  unconfirmed.
+- **Overfitting check.** I re-labelled the entire dataset - every well,
+  inspection, repair, regulation, note and user ID shifted to new values -
+  ingested it, and ran seven deterministic probes (production verdicts,
+  spill totals, user mapping, parsed rules). 7/7 passed, because the rules
+  come from the manuals and the data, not from the sample IDs.
+
 ## What I would do next
 
 Confidence-gated second reads for borderline producing readings (within
