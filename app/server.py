@@ -31,6 +31,10 @@ class ChatIn(BaseModel):
 def index():
     return FileResponse(os.path.join(os.path.dirname(__file__), 'static', 'index.html'))
 
+@app.get('/chat')
+def chat_page():
+    return FileResponse(os.path.join(os.path.dirname(__file__), 'static', 'chat.html'))
+
 @app.get('/api/users')
 def users():
     return {'users': cp.q("SELECT u.user_id, u.name, u.role, t.name AS team FROM users u LEFT JOIN teams t ON t.team_id=u.team_id ORDER BY u.user_id")}

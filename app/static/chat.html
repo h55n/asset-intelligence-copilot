@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Asset Intelligence Copilot</title>
+<style>
+  :root {
+    --bg:#f7f4ee; --panel:#ffffff; --panel2:#faf8f3; --line:#e8e2d6; --line2:#ddd5c4;
+    --text:#221f1a; --dim:#6f6a5e; --faint:#a39c8c;
+    --ink:#171512;
+    --accent:#c76a00; --accent-soft:#fdf0dd;
+    --green:#2e7d4f; --green-soft:#e3f2e8; --red:#b23b3b; --red-soft:#fbe7e4;
+    --lav:#f0e9fb; --mint:#e2f2ea; --peach:#fdeede; --sky:#e3eef8;
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
+    --sans: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; }
+  body { font-family: var(--sans); background: var(--bg); color: var(--text); display: flex; flex-direction: column; font-feature-settings: "tnum"; }
+
+  header .home { font-family: var(--serif); color: var(--faint); text-decoration: none; font-size: 18px; padding: 2px 4px; }
+  header .home:hover { color: var(--accent); }
+  header { display: flex; align-items: center; gap: 14px; padding: 0 24px; height: 60px; background: var(--panel); border-bottom: 1px solid var(--line); flex: none; }
+  header .logo { width: 30px; height: 30px; border-radius: 50%; background: var(--ink); display: grid; place-items: center; font-family: var(--serif); font-style: italic; font-size: 14px; color: #f5efe3; }
+  header h1 { font-family: var(--serif); font-size: 18px; font-weight: 600; letter-spacing: .2px; }
+  header .badge { font-size: 11.5px; color: var(--dim); border: 1px solid var(--line2); border-radius: 20px; padding: 4px 12px; white-space: nowrap; background: var(--panel2); }
+  header .badge b { color: var(--accent); font-weight: 600; }
+  header select { margin-left: auto; background: var(--panel2); color: var(--text); border: 1px solid var(--line2); border-radius: 20px; padding: 8px 14px; font-size: 13px; cursor: pointer; }
+  header select:focus { outline: 2px solid var(--accent-soft); }
+
+  #layout { flex: 1; display: grid; grid-template-columns: 268px minmax(0,1fr); min-height: 0; }
+
+  aside { background: var(--panel2); border-right: 1px solid var(--line); padding: 22px 16px; overflow-y: auto; }
+  aside .sect { font-family: var(--serif); font-style: italic; font-size: 15px; color: var(--ink); margin: 18px 8px 10px; }
+  aside .sect:first-child { margin-top: 0; }
+  .qbtn { display: block; width: 100%; text-align: left; background: var(--panel); border: 1px solid var(--line); color: var(--dim); font-size: 13px; line-height: 1.4; padding: 10px 14px; border-radius: 14px; cursor: pointer; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(60,50,30,.05); }
+  .qbtn:hover { color: var(--text); border-color: var(--line2); box-shadow: 0 3px 10px rgba(60,50,30,.08); transform: translateY(-1px); }
+  [data-q="prod"] .qbtn { background: var(--mint); border-color: #cfe7d9; }
+  [data-q="spill"] .qbtn { background: var(--peach); border-color: #f3ddc4; }
+  [data-q="comp"] .qbtn { background: var(--lav); border-color: #e2d6f3; }
+
+  #main { display: flex; flex-direction: column; min-width: 0; }
+  #welcome { margin: auto; max-width: 560px; text-align: center; padding: 20px; }
+  #welcome .art { width: 260px; margin: 0 auto 18px; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(60,45,20,.14); border: 1px solid var(--line); }
+  #welcome h2 { font-family: var(--serif); font-weight: 600; font-size: 34px; color: var(--ink); letter-spacing: -.3px; line-height: 1.12; }
+  #welcome h2 em { color: var(--accent); }
+  #welcome p { margin-top: 12px; color: var(--dim); font-size: 14.5px; line-height: 1.65; }
+  #welcome .hint { margin-top: 18px; font-family: var(--serif); font-style: italic; font-size: 13px; color: var(--faint); }
+  #chat { flex: 1; overflow-y: auto; padding: 30px 30px 12px; display: flex; flex-direction: column; gap: 20px; scroll-behavior: smooth; }
+  #chat::-webkit-scrollbar, aside::-webkit-scrollbar { width: 8px; }
+  #chat::-webkit-scrollbar-thumb, aside::-webkit-scrollbar-thumb { background: var(--line2); border-radius: 4px; }
+
+  .msg { max-width: 860px; width: fit-content; line-height: 1.6; font-size: 14.5px; }
+  .msg.user { align-self: flex-end; background: var(--ink); color: #f5f1e8; padding: 11px 18px; border-radius: 20px 20px 6px 20px; font-size: 14px; }
+  .msg.bot { align-self: flex-start; min-width: 340px; }
+  .msg.bot .who { font-family: var(--serif); font-style: italic; font-size: 13px; color: var(--faint); margin-bottom: 6px; }
+  .msg.bot .ans { background: var(--panel); border: 1px solid var(--line); border-radius: 6px 20px 20px 20px; padding: 16px 20px; box-shadow: 0 2px 10px rgba(60,50,30,.06); }
+  .msg.bot b { color: var(--ink); }
+
+  .calls { margin-top: 10px; font-size: 12px; color: var(--faint); }
+  .calls summary { cursor: pointer; list-style: none; font-style: italic; font-family: var(--serif); font-size: 13px; }
+  .calls summary:hover { color: var(--dim); }
+  .calls summary::before { content: '▸ '; font-style: normal; }
+  .calls[open] summary::before { content: '▾ '; }
+  .calls .tool { font-family: ui-monospace, monospace; color: var(--dim); background: var(--panel2); border: 1px solid var(--line); border-radius: 8px; padding: 3px 9px; margin: 6px 6px 0 0; display: inline-block; font-size: 11px; }
+
+  .viz { margin-top: 14px; }
+  .viz .vt { font-family: var(--serif); font-style: italic; font-size: 14px; color: var(--dim); margin-bottom: 10px; }
+  table.data { border-collapse: collapse; font-size: 13px; background: var(--panel); border-radius: 12px; overflow: hidden; box-shadow: 0 1px 4px rgba(60,50,30,.06); }
+  table.data th, table.data td { border: 1px solid var(--line); padding: 8px 14px; text-align: left; }
+  table.data th { background: var(--panel2); color: var(--ink); font-weight: 600; font-size: 12.5px; }
+  .card { background: var(--panel2); border: 1px solid var(--line); border-radius: 16px; padding: 18px 24px; display: inline-block; min-width: 250px; }
+  .card .big { font-family: var(--serif); font-size: 21px; font-weight: 700; margin: 2px 0 10px; letter-spacing: .3px; }
+  .card .ok { color: var(--green); } .card .down { color: var(--red); }
+  .cites { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 7px; align-items: center; }
+  .cites .lbl { font-family: var(--serif); font-style: italic; font-size: 12.5px; color: var(--faint); margin-right: 2px; }
+  .cite { font-size: 11.5px; font-family: ui-monospace, monospace; background: var(--sky); border: 1px solid #cfdff0; color: #28557e; padding: 4px 12px; border-radius: 14px; cursor: pointer; }
+  .cite:hover { background: #d4e5f5; }
+  canvas { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; max-width: 100%; height: auto; box-shadow: 0 1px 4px rgba(60,50,30,.05); }
+
+  #composer { flex: none; padding: 16px 30px 22px; background: linear-gradient(transparent, var(--bg) 35%); }
+  #composer .box { display: flex; gap: 10px; max-width: 860px; background: var(--panel); border: 1px solid var(--line2); border-radius: 28px; padding: 7px 7px 7px 22px; align-items: center; box-shadow: 0 4px 16px rgba(60,50,30,.08); }
+  #composer .box:focus-within { border-color: var(--accent); }
+  #composer input { flex: 1; background: transparent; border: 0; color: var(--text); font-size: 14.5px; padding: 10px 0; outline: none; }
+  #composer input::placeholder { color: var(--faint); }
+  #composer button { background: var(--ink); border: 0; color: #f5f1e8; font-weight: 600; font-size: 13.5px; padding: 12px 28px; border-radius: 22px; cursor: pointer; }
+  #composer button:hover { background: #33302a; }
+  #composer button:disabled { background: var(--line2); color: var(--dim); cursor: default; }
+  .thinking { color: var(--faint); font-style: italic; font-family: var(--serif); }
+  .err .ans { border-color: #eec9c4 !important; color: var(--red); }
+
+  #chips { display: none; gap: 8px; padding: 12px 16px 0; overflow-x: auto; flex: none; }
+  #chips .qbtn { white-space: nowrap; border-radius: 18px; padding: 8px 16px; margin: 0; width: auto; }
+
+  #empty { align-self: center; margin: auto; text-align: center; max-width: 620px; padding: 20px; }
+  #empty h2 { font-family: var(--serif); font-size: 34px; font-weight: 600; margin-bottom: 12px; color: var(--ink); }
+  #empty h2 em { color: var(--accent); }
+  #empty p { color: var(--dim); font-size: 14px; line-height: 1.7; margin-bottom: 26px; }
+  #empty .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(215px, 1fr)); gap: 12px; text-align: left; }
+  #empty .ecard { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 18px 16px; font-size: 13px; color: var(--dim); cursor: pointer; line-height: 1.5; box-shadow: 0 2px 8px rgba(60,50,30,.06); }
+  #empty .ecard:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(60,50,30,.1); }
+  #empty .ecard .t { font-family: var(--serif); font-style: italic; font-size: 13px; margin-bottom: 8px; }
+  #empty .ecard:nth-child(1) { background: var(--mint); } #empty .ecard:nth-child(1) .t { color: var(--green); }
+  #empty .ecard:nth-child(2) { background: var(--peach); } #empty .ecard:nth-child(2) .t { color: var(--accent); }
+  #empty .ecard:nth-child(3) { background: var(--sky); } #empty .ecard:nth-child(3) .t { color: #28557e; }
+  #empty .ecard:nth-child(4) { background: var(--lav); } #empty .ecard:nth-child(4) .t { color: #6b4fa1; }
+
+  @media (max-width: 640px) {
+    header { height: auto; min-height: 54px; padding: 8px 14px; gap: 10px; }
+    header h1 { font-size: 15px; white-space: nowrap; }
+    header .badge { display: none; }
+    header select { max-width: 134px; text-overflow: ellipsis; padding: 7px 10px; font-size: 12px; }
+    #empty h2 { font-size: 26px; }
+  }
+  @media (max-width: 1000px) {
+    #layout { grid-template-columns: 1fr; }
+    aside { display: none; }
+    #chips { display: flex; }
+    #chat { padding: 20px 16px 8px; }
+    #composer { padding: 12px 16px 16px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <a href="/" class="home" title="back to home">&larr;</a>
+  <div class="logo">Ai</div>
+  <h1>Asset Intelligence Copilot</h1>
+  <span class="badge">field data · <b id="wellCount">live</b></span>
+  <span class="badge opt">open-weight model · <b>rules-verified answers</b></span>
+  <select id="userPicker"></select>
+</header>
+<div id="chips"></div>
+<div id="layout">
+  <aside>
+    <div class="sect">Production</div>
+    <div data-q="prod"></div>
+    <div class="sect">Spills &amp; repairs</div>
+    <div data-q="spill"></div>
+    <div class="sect">Compliance</div>
+    <div data-q="comp"></div>
+  </aside>
+  <div id="main">
+    <div id="chat"></div>
+    <div id="welcome">
+      <div class="art"><svg viewBox="0 0 700 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Pump jacks in a warm field">
+        <defs><linearGradient id="wsky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#dcebf4"/><stop offset=".6" stop-color="#f4e8cf"/><stop offset="1" stop-color="#f2ddb8"/></linearGradient></defs>
+        <rect width="700" height="340" fill="url(#wsky)"/>
+        <circle cx="530" cy="86" r="44" fill="#f7c96b" opacity=".9"/><circle cx="530" cy="86" r="62" fill="#f7c96b" opacity=".22"/>
+        <path d="M0 190 Q 160 140 340 176 T 700 168 V340 H0 Z" fill="#c9dcc6"/>
+        <path d="M0 246 Q 200 206 420 236 T 700 226 V340 H0 Z" fill="#e6d2ab"/>
+        <g transform="translate(235,296)" fill="#2b251c">
+          <rect x="-86" y="0" width="172" height="12" rx="3"/>
+          <polygon points="-52,0 -22,-96 -12,-96 -40,0"/><polygon points="8,0 38,-96 28,-96 -2,0"/>
+          <rect x="-30" y="-104" width="60" height="12" rx="4"/>
+          <polygon points="-92,-116 58,-92 58,-80 -92,-104"/>
+          <path d="M -92,-116 q-24,6 -22,34 l14,4 q3,-20 10,-26 Z"/>
+          <circle cx="58" cy="-86" r="17"/><rect x="52" y="-72" width="10" height="58" rx="4"/><rect x="-108" y="-64" width="9" height="64" rx="3"/>
+        </g>
+        <g transform="translate(500,272) scale(.5)" fill="#3a3226">
+          <rect x="-86" y="0" width="172" height="12" rx="3"/>
+          <polygon points="-52,0 -22,-96 -12,-96 -40,0"/><polygon points="8,0 38,-96 28,-96 -2,0"/>
+          <rect x="-30" y="-104" width="60" height="12" rx="4"/>
+          <polygon points="-92,-116 58,-92 58,-80 -92,-104"/>
+          <path d="M -92,-116 q-24,6 -22,34 l14,4 q3,-20 10,-26 Z"/>
+          <circle cx="58" cy="-86" r="17"/><rect x="52" y="-72" width="10" height="58" rx="4"/>
+        </g>
+      </svg></div>
+      <h2>Ask the field <em>anything.</em></h2>
+      <p>Which wells are down, which spills are late to report, who broke which rule - answered from the live records, with the evidence cited. You can also tell it things to remember, or correct a wrong reading.</p>
+      <div class="hint">try one of the questions on the left, or just type</div>
+    </div>
+    <div id="composer">
+      <div class="box">
+        <input id="q" placeholder="Ask about a well, downtime, spills, compliance - or tell me something to remember..." autofocus>
+        <button id="send">Ask</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+let USER = null, SESSION = null;
+const chat = document.getElementById('chat');
+const welcome = document.getElementById('welcome');
+
+const QUICK = {
+  prod: ["Which wells are not producing right now?", "Is WELL-0001 producing oil? Why?", "Show a map of all wells that are down", "Compare downtime across wells this quarter"],
+  spill: ["Any spills in the last 90 days? How much oil?", "Which spills were not contained within 24 hours?", "Show a heatmap of spills by area and month", "Which wells have repeat spill problems?"],
+  comp: ["Which rules has WELL-0001 broken in the last year?", "Any overdue spill reports or repairs?", "Show this week's inspection compliance", "Which wells need a root cause analysis?"]
+};
+
+function buildQuick() {
+  const mk = (q) => { const b = el('button', 'qbtn'); b.textContent = q; b.onclick = () => ask(q); return b; };
+  for (const [k, qs] of Object.entries(QUICK)) {
+    const host = document.querySelector(`[data-q="${k}"]`);
+    qs.forEach(q => host.appendChild(mk(q)));
+  }
+  const chips = document.getElementById('chips');
+  [...QUICK.prod, ...QUICK.spill, ...QUICK.comp].slice(0, 8).forEach(q => chips.appendChild(mk(q)));
+}
+
+async function loadUsers() {
+  const r = await fetch('/api/users').then(r => r.json());
+  const sel = document.getElementById('userPicker');
+  sel.innerHTML = r.users.map(u => `<option value="${u.user_id}">${u.name} · ${u.role.replace(/_/g,' ')}</option>`).join('');
+  USER = localStorage.getItem('aic_user') || r.users[0].user_id;
+  sel.value = USER;
+  sel.onchange = () => { USER = sel.value; SESSION = null; localStorage.setItem('aic_user', USER); };
+  const wc = document.getElementById('wellCount');
+  if (r.well_count) wc.textContent = r.well_count + ' wells live';
+}
+
+function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+
+function md(t) {
+  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;')
+          .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
+          .replace(/\n/g, '<br>');
+}
+
+function renderViz(v) {
+  if (!v || !v.type || v.type === 'none') return null;
+  const wrap = el('div', 'viz');
+  if (v.title) wrap.appendChild(el('div', 'vt', v.title));
+  const d = v.data || {};
+  if (v.type === 'card') {
+    const c = el('div', 'card');
+    const prod = d.producing ?? d.producing_now;
+    if (prod !== undefined) c.appendChild(el('div', 'big ' + (prod ? 'ok' : 'down'), prod ? '● Producing' : '● Not producing'));
+    for (const [k, val] of Object.entries(d)) {
+      if (['producing','producing_now'].includes(k)) continue;
+      const row = el('div'); row.style.fontSize = '13px'; row.style.marginTop = '3px';
+      row.innerHTML = `<span style="color:var(--dim)">${k.replace(/_/g,' ')}:</span> ${val}`;
+      c.appendChild(row);
+    }
+    wrap.appendChild(c);
+  } else if (v.type === 'table') {
+    const t = el('table', 'data');
+    const tr = el('tr'); (d.columns||[]).forEach(c => tr.appendChild(el('th', null, c))); t.appendChild(tr);
+    (d.rows||[]).forEach(r => { const tr2 = el('tr'); r.forEach(c => tr2.appendChild(el('td', null, String(c)))); t.appendChild(tr2); });
+    wrap.appendChild(t);
+  } else if (v.type === 'line') {
+    const cv = el('canvas'); cv.width = 760; cv.height = 300; wrap.appendChild(cv);
+    drawLine(cv, d);
+  } else if (v.type === 'bar') {
+    const cv = el('canvas'); cv.width = 620; cv.height = 300; wrap.appendChild(cv);
+    drawBar(cv, d);
+  } else if (v.type === 'map') {
+    const cv = el('canvas'); cv.width = 640; cv.height = 420; wrap.appendChild(cv);
+    drawMap(cv, d);
+  } else if (v.type === 'heatmap') {
+    const cv = el('canvas'); cv.width = 760; cv.height = 60 + 30 * ((d.rows||[]).length); wrap.appendChild(cv);
+    drawHeat(cv, d);
+  }
+  return wrap;
+}
+
+const COLORS = ['#c76a00','#28557e','#2e7d4f','#b23b3b'];
+const AXTXT = '#6f6a5e', AXLINE = '#ddd5c4';
+function axes(ctx, w, h, pad) {
+  ctx.strokeStyle = AXLINE; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(pad, 10); ctx.lineTo(pad, h-pad); ctx.lineTo(w-10, h-pad); ctx.stroke();
+}
+function drawLine(cv, d) {
+  const ctx = cv.getContext('2d'), w = cv.width, h = cv.height, pad = 42;
+  const xs = d.x || [], series = d.series || [];
+  const allY = series.flatMap(s => s.y);
+  const min = Math.min(...allY) - 2, max = Math.max(...allY) + 2;
+  const X = i => pad + (w - pad - 20) * (xs.length < 2 ? 0 : i / (xs.length - 1));
+  const Y = v => h - pad - (h - pad - 20) * (v - min) / (max - min || 1);
+  axes(ctx, w, h, pad);
+  ctx.fillStyle = AXTXT; ctx.font = '10px sans-serif';
+  for (let i = 0; i < xs.length; i += Math.ceil(xs.length/8)) ctx.fillText(xs[i].slice(5), X(i)-12, h-pad+14);
+  for (let v = Math.ceil(min); v <= max; v += Math.ceil((max-min)/5)) ctx.fillText(v, 6, Y(v)+3);
+  series.forEach((s, si) => {
+    ctx.strokeStyle = COLORS[si % 4]; ctx.lineWidth = 2; ctx.beginPath();
+    s.y.forEach((v, i) => i ? ctx.lineTo(X(i), Y(v)) : ctx.moveTo(X(i), Y(v))); ctx.stroke();
+    ctx.fillStyle = COLORS[si % 4]; ctx.fillText(s.label, pad + 8, 22 + 13*si);
+  });
+  (d.markers || []).forEach(mk => {
+    const i = xs.indexOf(mk.x); if (i < 0) return;
+    ctx.fillStyle = '#b23b3b'; ctx.beginPath(); ctx.arc(X(i), 22, 4, 0, 7); ctx.fill();
+    ctx.fillText(mk.label || 'not producing', X(i) + 8, 26);
+  });
+}
+function drawBar(cv, d) {
+  const ctx = cv.getContext('2d'), w = cv.width, h = cv.height, pad = 42;
+  const labels = d.labels || [], vals = d.values || [];
+  const max = Math.max(...vals, 1);
+  axes(ctx, w, h, pad);
+  const bw = (w - pad - 30) / vals.length;
+  vals.forEach((v, i) => {
+    const bh = (h - pad - 30) * v / max;
+    ctx.fillStyle = COLORS[i % 4];
+    ctx.fillRect(pad + i*bw + 8, h - pad - bh, bw - 16, bh);
+    ctx.fillStyle = '#221f1a'; ctx.font = '11px sans-serif';
+    ctx.fillText(v, pad + i*bw + bw/2 - 8, h - pad - bh - 6);
+    ctx.fillStyle = AXTXT; ctx.fillText(labels[i].replace('WELL-','W'), pad + i*bw + 8, h - pad + 14);
+  });
+}
+function drawMap(cv, d) {
+  const ctx = cv.getContext('2d'), w = cv.width, h = cv.height;
+  const pins = d.pins || [];
+  if (!pins.length) return;
+  const lats = pins.map(p => p.lat), lons = pins.map(p => p.lon);
+  const pad = 40;
+  const minLa = Math.min(...lats) - 0.01, maxLa = Math.max(...lats) + 0.01;
+  const minLo = Math.min(...lons) - 0.01, maxLo = Math.max(...lons) + 0.01;
+  const X = lo => pad + (w - 2*pad) * (lo - minLo) / (maxLo - minLo || 1);
+  const Y = la => h - pad - (h - 2*pad) * (la - minLa) / (maxLa - minLa || 1);
+  ctx.strokeStyle = '#e8e2d6';
+  for (let i = 0; i < 8; i++) { ctx.beginPath(); ctx.moveTo(pad + i*(w-2*pad)/8, pad); ctx.lineTo(pad + i*(w-2*pad)/8, h-pad); ctx.stroke();
+                                ctx.beginPath(); ctx.moveTo(pad, pad + i*(h-2*pad)/8); ctx.lineTo(w-pad, pad + i*(h-2*pad)/8); ctx.stroke(); }
+  pins.forEach(p => {
+    ctx.fillStyle = '#b23b3b'; ctx.beginPath(); ctx.arc(X(p.lon), Y(p.lat), 7, 0, 7); ctx.fill();
+    ctx.fillStyle = '#221f1a'; ctx.font = '11px sans-serif';
+    ctx.fillText(p.well + (p.label ? ' (' + p.label + ')' : ''), X(p.lon) + 10, Y(p.lat) + 4);
+  });
+}
+function drawHeat(cv, d) {
+  const ctx = cv.getContext('2d');
+  const rows = d.rows || [], cols = d.cols || [], vals = d.values || [];
+  const cw = Math.min(60, (cv.width - 170) / cols.length), ch = 28, x0 = 160, y0 = 34;
+  const max = Math.max(...vals.flat(), 1);
+  ctx.font = '11px sans-serif';
+  cols.forEach((c, j) => { ctx.fillStyle = AXTXT; ctx.fillText(c, x0 + j*cw + 8, 22); });
+  rows.forEach((r, i) => {
+    ctx.fillStyle = AXTXT; ctx.fillText(r, 8, y0 + i*ch + 18);
+    (vals[i] || []).forEach((v, j) => {
+      const a = v / max;
+      ctx.fillStyle = `rgba(199, 106, 0, ${0.08 + 0.8*a})`;
+      ctx.fillRect(x0 + j*cw, y0 + i*ch, cw - 2, ch - 2);
+      ctx.fillStyle = a > 0.55 ? '#ffffff' : '#221f1a';
+      ctx.fillText(v, x0 + j*cw + cw/2 - 6, y0 + i*ch + 18);
+    });
+  });
+}
+
+function showEmpty() {
+  const e = el('div'); e.id = 'empty';
+  e.innerHTML = `<h2>Ask the field, <em>anything.</em></h2>
+    <p>Answers come straight from the live well records - inspections, temperatures, spills, repairs and compliance - with the exact records cited. You can also tell me field updates to remember, like a corrected temperature.</p>
+    <div class="cards">
+      <div class="ecard" data-qq="Is WELL-0001 producing oil right now? Why?"><div class="t">Production</div>Is WELL-0001 producing oil right now? Why?</div>
+      <div class="ecard" data-qq="Which spills in the last 90 days were not contained in time?"><div class="t">Spills</div>Which recent spills were not contained in time?</div>
+      <div class="ecard" data-qq="Show a map of all wells that are not producing."><div class="t">Map</div>Show a map of all wells that are down</div>
+      <div class="ecard" data-qq="Any overdue spill reports or repairs?"><div class="t">Compliance</div>Any overdue spill reports or repairs?</div>
+    </div>`;
+  e.querySelectorAll('.ecard').forEach(c => c.onclick = () => ask(c.dataset.qq));
+  chat.appendChild(e);
+}
+
+function addMsg(role, text, payload) {
+  const emp = document.getElementById('empty'); if (emp) emp.remove();
+  const m = el('div', 'msg ' + (role === 'user' ? 'user' : 'bot'));
+  if (role === 'user') { m.innerHTML = md(text); }
+  else {
+    const who = el('div', 'who'); who.textContent = 'copilot'; m.appendChild(who);
+    const ans = el('div', 'ans'); ans.innerHTML = md(text); m.appendChild(ans);
+    if (payload && payload.viz) { const v = renderViz(payload.viz); if (v) ans.appendChild(v); }
+    if (payload && payload.citations && payload.citations.length) {
+      const cs = el('div', 'cites'); cs.appendChild(el('span', 'lbl', 'evidence'));
+      payload.citations.forEach(c => {
+        const chip = el('span', 'cite', c);
+        chip.title = 'ask for the full record';
+        chip.onclick = () => ask(`Show me the full record ${c}`);
+        cs.appendChild(chip);
+      });
+      ans.appendChild(cs);
+    }
+    if (payload && payload.calls && payload.calls.length) {
+      const det = el('details', 'calls');
+      const names = payload.calls.map(c => c.tool);
+      det.appendChild(el('summary', null, `verified against the records (${names.length} lookup${names.length>1?'s':''})`));
+      names.forEach(n => det.appendChild(el('span', 'tool', n)));
+      ans.appendChild(det);
+    }
+    if (payload && payload.follow_up) { const f = el('div'); f.style.marginTop = '8px'; f.style.color = 'var(--accent)'; f.innerHTML = md(payload.follow_up); ans.appendChild(f); }
+  }
+  chat.appendChild(m); chat.scrollTop = chat.scrollHeight;
+  return m;
+}
+
+async function ask(text) {
+  if (welcome) welcome.style.display = 'none';
+  if (!text || !USER) return;
+  const inp = document.getElementById('q'); inp.value = '';
+  document.getElementById('send').disabled = true;
+  addMsg('user', text);
+  const thinking = addMsg('bot', 'checking the records...');
+  thinking.classList.add('thinking');
+  try {
+    const r = await fetch('/api/chat', {method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({user_id: USER, session_id: SESSION, message: text})}).then(r => r.json());
+    thinking.remove();
+    if (r.error) { addMsg('bot', r.error).classList.add('err'); return; }
+    SESSION = r.session_id;
+    addMsg('bot', r.answer || '(no answer)', r);
+  } catch (e) {
+    thinking.remove();
+    addMsg('bot', 'network error: ' + e).classList.add('err');
+  } finally {
+    document.getElementById('send').disabled = false;
+    document.getElementById('q').focus();
+  }
+}
+function send() { ask(document.getElementById('q').value.trim()); }
+document.getElementById('send').onclick = send;
+document.getElementById('q').addEventListener('keydown', e => { if (e.key === 'Enter') send(); });
+buildQuick();
+loadUsers();
+showEmpty();
+</script>
+</body>
+</html>
