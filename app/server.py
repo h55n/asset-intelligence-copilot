@@ -46,6 +46,7 @@ def chat(body: ChatIn):
     try:
         r = agent.answer(user['name'], user['user_id'], session, body.message, history)
     except Exception as e:
+        import traceback; traceback.print_exc()
         return JSONResponse({'error': f'{type(e).__name__}: {e}', 'session_id': session}, status_code=500)
     cp.log_chat(user['user_id'], session, 'user', body.message, r.get('wells', []))
     cp.log_chat(user['user_id'], session, 'assistant', r.get('answer', ''), r.get('wells', []))
