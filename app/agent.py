@@ -140,9 +140,21 @@ class Agent:
         msgs.append({"role": "user", "content": message})
         wells_seen = set(WELL_RE.findall(message.upper()))
         calls_made = []
+        shrink_rounds = [0]
         for _ in range(max_rounds):
             self._fit_budget(msgs)
-            resp = chat_completion(self.base_url, self.api_key, self.model, msgs, self.tools_json)
+            try:
+                resp = chat_completion(self.base_url, self.api_key, self.model, msgs, self.tools_json)
+            except LLMError as e:
+                # hard "request too large": shrink harder and retry
+                if str(e).startswith('413') and shrink_rounds[0] < 3:
+                    shrink_rounds[0] += 1
+                    self.BUDGET_CHARS = int(self.BUDGET_CHARS * 0.7)
+                    for m in msgs:
+                        if m.get("role") == "tool" and len(m.get("content", "")) > 1200:
+                            m["content"] = m["content"][:1200] + "...[trimmed]"
+                    continue
+                raise
             ch = resp["choices"][0]["message"]
             if ch.get("tool_calls"):
                 msgs.append({"role": "assistant", "content": ch.get("content") or "", "tool_calls": ch["tool_calls"]})
@@ -165,7 +177,7 @@ class Agent:
         return {"answer": "I could not finish checking the records in time - please rephrase or narrow the question.",
                 "viz": {"type": "none"}, "citations": [], "calls": calls_made}
 
-    BUDGET_CHARS = 26000  # ~6.5k tokens, stays under the free-tier per-minute budget
+    BUDGET_CHARS = 19000  # ~5k tokens; leaves room for tool schemas under the 8k TPM cap
 
     def _fit_budget(self, msgs):
         def size():
