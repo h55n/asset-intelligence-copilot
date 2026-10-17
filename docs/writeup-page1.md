@@ -85,11 +85,14 @@ only from tool data.
 
 ## Models and cost
 
-Inference: one hosted open-weight model (120B class) over an
-OpenAI-compatible free-tier API with tool calling; temperature 0.2; tool
-results truncated and rate-limit backoff. Zero cost. Retrieval is SQLite
-FTS + structured SQL - no embedding infrastructure to drift between sample
-and test data.
+Inference: one hosted open-weight model - Gemma 4 (26B, mixture-of-experts) -
+over the Google AI Studio free-tier OpenAI-compatible API with tool calling;
+temperature 0.2; tool results truncated, pacing plus backoff on rate limits
+and transient errors. Zero cost. The client is provider-agnostic (base URL,
+model and key are environment config), so any OpenAI-compatible open-weight
+model can be swapped in without code changes. Retrieval is SQLite FTS +
+structured SQL - no embedding infrastructure to drift between sample and
+test data.
 
 ## What I would do next
 

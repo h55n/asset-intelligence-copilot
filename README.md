@@ -65,8 +65,12 @@ visual the user named), rendered inline in the chat.
 ```
 pip install -r requirements.txt
 export LLM_API_KEY=...        # any OpenAI-compatible chat API with tool calling
-export LLM_BASE_URL=https://api.groq.com/openai/v1   # default
-export LLM_MODEL=openai/gpt-oss-120b                  # default
+# primary: Gemma 4 via Google AI Studio free tier
+export LLM_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai
+export LLM_MODEL=gemma-4-26b-a4b-it
+# alternative: Groq free tier
+# export LLM_BASE_URL=https://api.groq.com/openai/v1
+# export LLM_MODEL=openai/gpt-oss-120b
 export DATA_DIR=/path/to/sample-data
 python app/server.py           # http://localhost:8000
 ```
