@@ -342,9 +342,15 @@ class Copilot:
         self.db.execute("INSERT INTO shared_notes(created_at, author_user_id, asset_id, text, valid_from, valid_to, kind) VALUES (?,?,?,?,?,?,?)",
                         (datetime.now(timezone.utc).isoformat(), author, asset_id, text, valid_from, valid_to, kind))
         self.db.commit()
+        assessment, status = self._assess_claim(asset_id, text)
+        if assessment:
+            self.db.execute("INSERT INTO claims(created_at, author_user_id, asset_id, text, status, assessment) VALUES (?,?,?,?,?,?)",
+                            (datetime.now(timezone.utc).isoformat(), author, asset_id, text, status, assessment))
+            self.db.commit()
+        return {'status': status, 'assessment': assessment}
 
-    def record_claim(self, author, asset_id, text):
-        """Store a user statement and assess it against the data. Never deletes conflicts."""
+    def _assess_claim(self, asset_id, text):
+        """Compare a user statement with the current records. Returns (assessment, status)."""
         st = self.well_status(asset_id)
         assessment, status = None, 'unconfirmed'
         if st and st['producing']:
@@ -360,6 +366,11 @@ class Copilot:
             elif says_down and prod:
                 assessment = "Latest inspection shows the well producing. Recorded as unconfirmed."
                 status = 'contradicted'
+        return assessment, status
+
+    def record_claim(self, author, asset_id, text):
+        """Store a user statement and assess it against the data. Never deletes conflicts."""
+        assessment, status = self._assess_claim(asset_id, text)
         cur = self.db.execute("INSERT INTO claims(created_at, author_user_id, asset_id, text, status, assessment) VALUES (?,?,?,?,?,?)",
                               (datetime.now(timezone.utc).isoformat(), author, asset_id, text, status, assessment))
         self.db.commit()

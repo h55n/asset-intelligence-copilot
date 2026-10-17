@@ -276,9 +276,14 @@ class Tools:
     def record_shared_note(self, author_user_id, well_id, text, valid_from=None, valid_to=None):
         author = self.c.user_by_name(author_user_id)
         uid = author['user_id'] if author else author_user_id
-        self.c.record_shared_note(uid, well_id.upper(), text, valid_from, valid_to)
-        return {'recorded': True, 'shared_with': 'all users', 'well_id': well_id.upper(),
-                'by': self._uname(uid), 'text': text}
+        out = {'recorded': True, 'shared_with': 'all users', 'well_id': well_id.upper(),
+               'by': self._uname(uid), 'text': text}
+        r = self.c.record_shared_note(uid, well_id.upper(), text, valid_from, valid_to)
+        if r and r.get('assessment'):
+            out['status'] = r['status']
+            out['assessment'] = r['assessment']
+            out['must_do'] = 'the statement conflicts with the records: tell the user what the data shows, keep both statements on record, mark theirs unconfirmed, and ask for confirmation'
+        return out
 
     def record_claim(self, author_user_id, well_id, text):
         author = self.c.user_by_name(author_user_id)
