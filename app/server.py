@@ -23,6 +23,17 @@ tools = Tools(cp)
 agent = Agent(tools, BASE_URL, API_KEY, MODEL, TODAY)
 app = FastAPI(title='Asset Intelligence Copilot')
 
+@app.middleware("http")
+async def strip_prefix(request, call_next):
+    pth = request.scope.get("path", "")
+    for pre in ("/api/index.py", "/api/index", "/index.py"):
+        if pth == pre or pth.startswith(pre + "/"):
+            request.scope["path"] = pth[len(pre):] or "/"
+            request.scope["raw_path"] = request.scope["path"].encode()
+            break
+    return await call_next(request)
+
+
 class ChatIn(BaseModel):
     user_id: str
     session_id: str | None = None
