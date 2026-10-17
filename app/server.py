@@ -15,8 +15,14 @@ API_KEY = os.environ.get('LLM_API_KEY', '')
 MODEL = os.environ.get('LLM_MODEL', 'openai/gpt-oss-120b')
 
 if not os.path.exists(DB_PATH):
-    from ingest import ingest
-    print('ingesting', DATA_DIR, ingest(DATA_DIR, DB_PATH))
+    bundled = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'copilot.db')
+    if os.path.exists(bundled):
+        import shutil
+        shutil.copyfile(bundled, DB_PATH)
+        print('using bundled database')
+    else:
+        from ingest import ingest
+        print('ingesting', DATA_DIR, ingest(DATA_DIR, DB_PATH))
 
 cp = Copilot(DB_PATH, today=TODAY)
 tools = Tools(cp)
