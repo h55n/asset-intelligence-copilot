@@ -3,235 +3,200 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Asset Intelligence Copilot - ask the field anything</title>
+<title>Asset Intelligence Copilot</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg:#f7f3ec; --panel:#fffdf9; --line:#e9e1d2; --line2:#ddd2bc;
-    --ink:#211d17; --text:#3a352c; --dim:#7a7263; --faint:#a89e8a;
-    --accent:#c76a00; --accent-soft:#fdf0dd;
-    --green:#2e7d4f; --mint:#e2f0e6; --peach:#fcecd8; --sky:#e2ecf5; --lav:#efe8f8;
-    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
-    --sans: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+    --bg:#f1f3f0; --card:#ffffff; --line:#e5e8e3; --line2:#d8dcd5;
+    --ink:#15181c; --grey:#8b9095; --grey2:#b9bec2;
+    --green:#20b14b; --green-deep:#1e7a3c; --olive:#8a9a2d;
+    --grot:"Space Grotesk","Inter",system-ui,sans-serif;
+    --sans:"Inter",system-ui,-apple-system,sans-serif;
+    --caps:11px/1.4 var(--sans); 
   }
-  * { box-sizing: border-box; margin: 0; }
-  body { font-family: var(--sans); background: var(--bg); color: var(--text); overflow-x: hidden; }
-  .wrap { max-width: 1140px; margin: 0 auto; padding: 0 28px; }
+  * { box-sizing:border-box; margin:0; }
+  body { font-family:var(--sans); background:var(--bg); color:var(--ink);
+    background-image:linear-gradient(var(--line) 1px, transparent 1px),linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size:88px 88px; }
+  .wrap { max-width:1080px; margin:0 auto; padding:0 26px; }
+  .caps { font:var(--caps); text-transform:uppercase; letter-spacing:.14em; color:var(--grey); font-weight:600; }
+  .card { background:var(--card); border-radius:30px; box-shadow:0 24px 70px rgba(23,32,24,.09), 0 2px 8px rgba(23,32,24,.05); }
 
-  nav { display: flex; align-items: center; gap: 12px; padding: 22px 0; }
-  nav .logo { width: 34px; height: 34px; border-radius: 50%; background: var(--ink); display: grid; place-items: center; font-family: var(--serif); font-style: italic; font-size: 15px; color: #f5efe3; }
-  nav .name { font-family: var(--serif); font-size: 17px; font-weight: 600; color: var(--ink); }
-  nav .pill { margin-left: auto; background: var(--ink); color: #f5f1e8; text-decoration: none; font-size: 13.5px; font-weight: 600; padding: 11px 24px; border-radius: 22px; }
-  nav .pill:hover { background: #38342c; }
+  nav { margin:22px auto 0; max-width:1080px; padding:0 26px; display:flex; }
+  nav .bar { flex:1; display:flex; align-items:center; gap:12px; background:var(--card); border-radius:40px; padding:10px 12px 10px 22px; box-shadow:0 10px 34px rgba(23,32,24,.08); }
+  nav .mark { width:26px;height:26px;border-radius:8px;background:var(--ink);display:grid;place-items:center;color:#fff;font:600 12px var(--grot); }
+  nav .name { font:600 15px var(--grot); letter-spacing:.01em; }
+  nav .cta { margin-left:auto; background:var(--ink); color:#fff; text-decoration:none; font:600 13px var(--sans); padding:11px 22px; border-radius:24px; }
+  nav .cta:hover { background:#2a2e33; }
 
-  .hero { display: grid; grid-template-columns: 1.05fr 1fr; gap: 48px; align-items: center; padding: 54px 0 40px; }
-  h1 { font-family: var(--serif); font-weight: 600; font-size: clamp(40px, 5.2vw, 64px); line-height: 1.06; color: var(--ink); letter-spacing: -.5px; }
-  h1 em { color: var(--accent); }
-  .sub { margin-top: 22px; font-size: 16px; line-height: 1.7; color: var(--dim); max-width: 460px; }
-  .cta { margin-top: 30px; display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
-  .cta .pill { background: var(--ink); color: #f5f1e8; text-decoration: none; font-size: 15px; font-weight: 600; padding: 15px 32px; border-radius: 28px; box-shadow: 0 6px 20px rgba(40,32,18,.18); }
-  .cta .pill:hover { transform: translateY(-2px); background: #38342c; }
-  .cta .ghost { color: var(--dim); text-decoration: none; font-size: 14px; border-bottom: 1px solid var(--line2); padding-bottom: 2px; }
-  .cta .ghost:hover { color: var(--ink); }
-  .badges { margin-top: 34px; display: flex; gap: 10px; flex-wrap: wrap; }
-  .badges span { font-size: 12px; color: var(--dim); background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 6px 14px; }
-  .badges b { color: var(--accent); font-weight: 600; }
+  .hero { position:relative; margin-top:26px; padding:34px 40px 40px; }
+  .hero .ghost { position:absolute; right:26px; top:-30px; font:700 190px var(--grot); color:rgba(21,24,28,.05); line-height:1; pointer-events:none; }
+  .hero .top { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+  .tag { background:var(--ink); color:#fff; font:500 12px var(--sans); padding:7px 14px; border-radius:16px; }
+  .toggle { display:flex; background:#fff; border:1.5px solid var(--ink); border-radius:16px; overflow:hidden; font:600 12px var(--sans); }
+  .toggle span { padding:6px 12px; }
+  .toggle .on { background:var(--ink); color:#fff; }
+  .hero .bracket { margin-left:auto; color:var(--ink); font:400 22px var(--grot); }
+  h1 { font:600 clamp(38px,5.4vw,62px)/1.04 var(--grot); letter-spacing:-.02em; margin-top:26px; max-width:560px; }
+  h1 .dot { color:var(--green); }
+  .sub { margin-top:16px; color:var(--grey); font-size:15px; line-height:1.65; max-width:480px; }
+  .ctaRow { margin-top:24px; display:flex; gap:14px; align-items:center; flex-wrap:wrap; }
+  .ctaRow .pill { background:var(--ink); color:#fff; text-decoration:none; font:600 14px var(--sans); padding:14px 28px; border-radius:26px; box-shadow:0 10px 26px rgba(21,24,28,.2); }
+  .ctaRow .pill:hover { transform:translateY(-2px); }
+  .ctaRow .arrow { font:400 26px var(--grot); color:var(--ink); }
+  .art { margin-top:28px; border-radius:22px; overflow:hidden; position:relative; }
+  .art svg { display:block; width:100%; height:auto; }
+  .art .loc { position:absolute; left:16px; bottom:14px; color:#fff; font:500 12.5px var(--sans); text-shadow:0 1px 6px rgba(0,0,0,.35); display:flex; gap:6px; align-items:center; }
+  .art .chip { position:absolute; right:14px; top:14px; background:rgba(255,255,255,.92); border-radius:14px; padding:7px 13px; font:600 11.5px var(--sans); color:var(--ink); }
 
-  .art { position: relative; }
-  .art .frame { border-radius: 28px; overflow: hidden; box-shadow: 0 18px 50px rgba(60,45,20,.16); border: 1px solid var(--line); }
-  .art svg { display: block; width: 100%; height: auto; }
-  .float { position: absolute; background: var(--panel); border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 10px 30px rgba(60,45,20,.14); padding: 12px 16px; font-size: 12.5px; }
-  .float .k { font-family: var(--serif); font-style: italic; color: var(--faint); font-size: 11.5px; display: block; margin-bottom: 3px; }
-  .float .down { color: #b23b3b; font-weight: 700; }
-  .float .up { color: var(--green); font-weight: 700; }
-  .f1 { top: 8%; left: -34px; transform: rotate(-3.5deg); animation: bob 5s ease-in-out infinite; }
-  .f2 { bottom: 10%; right: -26px; transform: rotate(2.5deg); animation: bob 6s ease-in-out infinite .8s; }
-  @keyframes bob { 50% { margin-top: -9px; } }
+  .presets { margin-top:18px; display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+  .presets .lbl { margin-right:4px; }
+  .preset { background:#fff; border:1px solid var(--line2); color:var(--ink); font:500 12.5px var(--sans); padding:9px 18px; border-radius:20px; text-decoration:none; }
+  .preset:hover { border-color:var(--ink); }
+  .preset.dark { background:var(--ink); color:#fff; border-color:var(--ink); }
 
-  .marquee { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 18px 0; margin-top: 26px; overflow: hidden; white-space: nowrap; }
-  .marquee div { display: inline-block; font-family: var(--serif); font-style: italic; font-size: 15px; color: var(--faint); animation: slide 30s linear infinite; }
-  .marquee span { margin: 0 26px; }
-  @keyframes slide { to { transform: translateX(-50%); } }
+  .verify { margin-top:26px; }
+  .verify .track { margin-top:10px; background:#e9ece7; border-radius:16px; height:26px; position:relative; box-shadow:inset 0 1px 3px rgba(23,32,24,.08); }
+  .verify .fill { position:absolute; inset:0; background:linear-gradient(90deg,#25c051,#1da844); border-radius:16px; display:flex; align-items:center; justify-content:flex-end; padding-right:12px; color:#fff; font:600 11.5px var(--sans); }
+  .verify .knob { position:absolute; right:-3px; top:-3px; width:32px; height:32px; border-radius:50%; background:#fff; box-shadow:0 2px 8px rgba(23,32,24,.25); border:2px solid #1da844; }
 
-  .how { padding: 74px 0 10px; }
-  .kicker { font-family: var(--serif); font-style: italic; color: var(--accent); font-size: 15px; margin-bottom: 10px; }
-  h2 { font-family: var(--serif); font-weight: 600; font-size: clamp(28px, 3.4vw, 40px); color: var(--ink); letter-spacing: -.3px; }
-  .cards3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 36px; }
-  .hc { border-radius: 22px; padding: 26px 24px; border: 1px solid var(--line); box-shadow: 0 4px 16px rgba(60,45,20,.07); }
-  .hc:nth-child(1) { background: var(--mint); transform: rotate(-1.2deg); }
-  .hc:nth-child(2) { background: var(--peach); transform: rotate(.8deg); }
-  .hc:nth-child(3) { background: var(--sky); transform: rotate(-.6deg); }
-  .hc .ic { width: 44px; height: 44px; margin-bottom: 16px; }
-  .hc h3 { font-family: var(--serif); font-size: 20px; color: var(--ink); margin-bottom: 8px; }
-  .hc p { font-size: 13.5px; line-height: 1.65; color: #5c5546; }
+  .sect { margin-top:64px; }
+  .sect .head { display:flex; align-items:baseline; gap:18px; flex-wrap:wrap; }
+  .sect h2 { font:600 clamp(26px,3.2vw,36px)/1.1 var(--grot); letter-spacing:-.015em; }
+  .grid3 { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:22px; }
+  .mini { background:var(--card); border-radius:24px; padding:24px; box-shadow:0 14px 44px rgba(23,32,24,.07); }
+  .mini .num { font:700 13px var(--grot); color:var(--green-deep); }
+  .mini h3 { font:600 19px var(--grot); margin:12px 0 8px; letter-spacing:-.01em; }
+  .mini p { color:var(--grey); font-size:13.5px; line-height:1.65; }
+  .mini .ar { margin-top:14px; font:400 18px var(--grot); color:var(--ink); }
 
-  .example { padding: 74px 0 10px; display: grid; grid-template-columns: 1fr 1.15fr; gap: 48px; align-items: center; }
-  .excard { background: var(--panel); border: 1px solid var(--line); border-radius: 22px; box-shadow: 0 10px 34px rgba(60,45,20,.1); padding: 24px 26px; transform: rotate(.7deg); }
-  .excard .q { font-size: 13px; color: var(--dim); background: var(--bg); border-radius: 14px 14px 14px 4px; padding: 9px 14px; display: inline-block; }
-  .excard .a { margin-top: 14px; font-size: 14px; line-height: 1.65; color: var(--text); }
-  .excard .verdict { font-family: var(--serif); font-weight: 700; color: #b23b3b; font-size: 17px; }
-  .chips { margin-top: 12px; display: flex; gap: 7px; flex-wrap: wrap; }
-  .chips span { font-size: 11px; font-family: ui-monospace, monospace; background: var(--sky); border: 1px solid #cfdff0; color: #28557e; padding: 4px 11px; border-radius: 12px; }
-  .example p.side { margin-top: 16px; font-size: 14.5px; line-height: 1.7; color: var(--dim); max-width: 420px; }
+  .example { margin-top:64px; padding:30px 34px 34px; position:relative; }
+  .example .q { font:600 20px var(--grot); letter-spacing:-.01em; margin-top:18px; }
+  .example .a { margin-top:14px; color:#5b6065; font-size:14.5px; line-height:1.7; max-width:640px; }
+  .example .verdict { display:inline-flex; align-items:center; gap:8px; font:600 14px var(--sans); color:var(--ink); background:#eaf7ee; border:1px solid #cdeed6; padding:7px 14px; border-radius:16px; }
+  .example .verdict i { width:8px; height:8px; border-radius:50%; background:var(--green); }
+  .chips { margin-top:16px; display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  .chips span { font:500 11px ui-monospace,monospace; background:#f2f4f1; border:1px solid var(--line2); color:#4c5257; padding:6px 12px; border-radius:14px; }
+  .example .ghost2 { position:absolute; right:30px; bottom:6px; font:700 120px var(--grot); color:rgba(21,24,28,.045); line-height:1; pointer-events:none; }
 
-  .band { margin: 80px 0 0; background: var(--ink); border-radius: 30px 30px 0 0; padding: 70px 0 60px; text-align: center; }
-  .band h2 { color: #f5f1e8; }
-  .band h2 em { color: #f0b25c; }
-  .band p { color: #a89e8a; margin-top: 14px; font-size: 14.5px; }
-  .band .pill { display: inline-block; margin-top: 28px; background: #f5f1e8; color: var(--ink); text-decoration: none; font-size: 15px; font-weight: 700; padding: 15px 36px; border-radius: 28px; }
-  .band .pill:hover { transform: translateY(-2px); }
-  .band .fine { margin-top: 30px; font-size: 12px; color: #6f6858; }
+  .band { margin:70px 0 60px; background:var(--ink); border-radius:32px; padding:56px 40px; text-align:center; position:relative; overflow:hidden; }
+  .band h2 { color:#fff; font:600 clamp(28px,3.6vw,42px)/1.08 var(--grot); letter-spacing:-.02em; }
+  .band h2 .dot { color:var(--green); }
+  .band p { color:#9aa0a6; margin-top:14px; font-size:14px; }
+  .band .pill { display:inline-block; margin-top:26px; background:var(--green); color:#fff; text-decoration:none; font:600 14px var(--sans); padding:14px 32px; border-radius:26px; }
+  .band .pill:hover { transform:translateY(-2px); }
+  .band .fine { margin-top:26px; font:500 11px ui-monospace,monospace; color:#6b7178; }
+  .band .br { position:absolute; font:400 20px var(--grot); color:#3a3f45; }
+  .band .br.tl { top:18px; left:22px; } .band .br.tr { top:18px; right:22px; } .band .br.bl { bottom:14px; left:22px; } .band .br.brr { bottom:14px; right:22px; }
 
-  .fade { opacity: 0; transform: translateY(18px); animation: rise .8s ease forwards; }
-  .d1 { animation-delay: .1s; } .d2 { animation-delay: .25s; } .d3 { animation-delay: .4s; }
-  @keyframes rise { to { opacity: 1; transform: none; } }
-  @media (prefers-reduced-motion: reduce) { .fade, .marquee div, .float { animation: none; opacity: 1; transform: none; } }
-
-  @media (max-width: 900px) {
-    .hero { grid-template-columns: 1fr; gap: 34px; padding-top: 34px; }
-    .cards3 { grid-template-columns: 1fr; }
-    .example { grid-template-columns: 1fr; gap: 28px; }
-    .f1 { left: 4px; } .f2 { right: 4px; }
-    nav .name { font-size: 15px; }
-    .band { border-radius: 22px 22px 0 0; }
+  .fade { opacity:0; transform:translateY(16px); animation:rise .7s ease forwards; }
+  .d1{animation-delay:.08s}.d2{animation-delay:.2s}.d3{animation-delay:.34s}
+  @keyframes rise { to { opacity:1; transform:none; } }
+  @media (prefers-reduced-motion: reduce) { .fade { animation:none; opacity:1; transform:none; } }
+  @media (max-width:860px) {
+    .grid3 { grid-template-columns:1fr; }
+    .hero { padding:26px 22px 28px; }
+    .hero .ghost { font-size:120px; top:-14px; }
+    .example { padding:24px 22px 26px; }
+    .band { padding:44px 22px; margin-bottom:40px; }
   }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <nav class="fade">
-    <div class="logo">Ai</div>
-    <div class="name">Asset Intelligence Copilot</div>
-    <a class="pill" href="/chat">Open the copilot</a>
-  </nav>
-
-  <section class="hero">
-    <div>
-      <h1 class="fade d1">Every well,<br>one question <em>away.</em></h1>
-      <p class="sub fade d2">Ask in plain words which wells stopped producing, which spills are late to report, who broke which rule. The copilot reads the live field records - inspections, temperatures, repairs, regulator filings - and answers in seconds, with the exact records cited.</p>
-      <div class="cta fade d3">
-        <a class="pill" href="/chat">Start asking &rarr;</a>
-        <a class="ghost" href="#how">see how it works</a>
-      </div>
-      <div class="badges fade d3">
-        <span>open-weight model · <b>Gemma 4</b></span>
-        <span>rules from the <b>fleet manuals</b></span>
-        <span><b>every answer</b> cites its records</span>
-      </div>
-    </div>
-    <div class="art fade d2">
-      <div class="frame">
-        <svg viewBox="0 0 700 520" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Illustration of pump jacks in a warm field at dusk">
-          <defs>
-            <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stop-color="#dcebf4"/><stop offset=".55" stop-color="#f4e8cf"/><stop offset="1" stop-color="#f2ddb8"/>
-            </linearGradient>
-            <linearGradient id="h1g" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stop-color="#b9d2c0"/><stop offset="1" stop-color="#d3e2cf"/>
-            </linearGradient>
-            <linearGradient id="h2g" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stop-color="#e3cfA5"/><stop offset="1" stop-color="#ecd9b4"/>
-            </linearGradient>
-          </defs>
-          <rect width="700" height="520" fill="url(#sky)"/>
-          <circle cx="522" cy="138" r="58" fill="#f7c96b" opacity=".9"/>
-          <circle cx="522" cy="138" r="80" fill="#f7c96b" opacity=".22"/>
-          <path d="M0 300 Q 130 238 300 286 T 700 272 V520 H0 Z" fill="url(#h1g)"/>
-          <path d="M0 372 Q 180 318 380 356 T 700 344 V520 H0 Z" fill="url(#h2g)"/>
-          <path d="M0 448 Q 220 408 460 440 T 700 430 V520 H0 Z" fill="#d9c096"/>
-          <g stroke="#8fa583" stroke-width="3" stroke-linecap="round" opacity=".7">
-            <path d="M60 470 q4 -14 0 -22"/><path d="M74 472 q-4 -12 2 -20"/><path d="M598 486 q4 -14 0 -22"/><path d="M612 488 q-4 -12 2 -20"/><path d="M330 492 q4 -14 0 -22"/>
-          </g>
-          <!-- pump jack, large -->
-          <g transform="translate(225,428)" fill="#2b251c">
-            <rect x="-86" y="0" width="172" height="12" rx="3"/>
-            <polygon points="-52,0 -22,-96 -12,-96 -40,0"/>
-            <polygon points="8,0 38,-96 28,-96 -2,0"/>
-            <rect x="-30" y="-104" width="60" height="12" rx="4"/>
-            <polygon points="-92,-116 58,-92 58,-80 -92,-104"/>
-            <path d="M -92,-116 q-24,6 -22,34 l14,4 q3,-20 10,-26 Z"/>
-            <circle cx="58" cy="-86" r="17"/>
-            <rect x="52" y="-72" width="10" height="58" rx="4"/>
-            <rect x="-108" y="-64" width="9" height="64" rx="3"/>
-          </g>
-          <!-- pump jack, small -->
-          <g transform="translate(488,402) scale(.55)" fill="#3a3226">
-            <rect x="-86" y="0" width="172" height="12" rx="3"/>
-            <polygon points="-52,0 -22,-96 -12,-96 -40,0"/>
-            <polygon points="8,0 38,-96 28,-96 -2,0"/>
-            <rect x="-30" y="-104" width="60" height="12" rx="4"/>
-            <polygon points="-92,-116 58,-92 58,-80 -92,-104"/>
-            <path d="M -92,-116 q-24,6 -22,34 l14,4 q3,-20 10,-26 Z"/>
-            <circle cx="58" cy="-86" r="17"/>
-            <rect x="52" y="-72" width="10" height="58" rx="4"/>
-          </g>
-          <!-- derrick -->
-          <g transform="translate(620,408)" stroke="#3a3226" stroke-width="5" fill="none" opacity=".85">
-            <path d="M-34 0 L0 -150 L34 0"/>
-            <path d="M-24 -48 H24 M-16 -92 H16 M-8 -128 H8" stroke-width="4"/>
-          </g>
-          <g fill="#4a4234">
-            <path d="M120 120 q8 -8 16 0 q-8 -3 -16 0 Z"/><path d="M150 106 q7 -7 14 0 q-7 -3 -14 0 Z"/><path d="M96 100 q6 -6 12 0 q-6 -2 -12 0 Z"/>
-          </g>
-        </svg>
-      </div>
-      <div class="float f1"><span class="k">WELL-0001 · latest inspection</span><span class="down">● not producing</span> · Δ3.2 °C</div>
-      <div class="float f2"><span class="k">spill report SR-01</span>filed in <span class="up">6 h</span> · inside 24 h</div>
-    </div>
-  </section>
-</div>
-
-<div class="marquee"><div>
-  <span>inspections</span>·<span>wellhead temperatures</span>·<span>spills &amp; containment</span>·<span>repairs &amp; costs</span>·<span>regulator deadlines</span>·<span>corrections &amp; memory</span>·
-  <span>inspections</span>·<span>wellhead temperatures</span>·<span>spills &amp; containment</span>·<span>repairs &amp; costs</span>·<span>regulator deadlines</span>·<span>corrections &amp; memory</span>·
-</div></div>
+<nav class="fade"><div class="bar">
+  <div class="mark">Ai</div><div class="name">Asset Intelligence Copilot</div>
+  <a class="cta" href="/chat">open the copilot</a>
+</div></nav>
 
 <div class="wrap">
-  <section class="how" id="how">
-    <div class="kicker fade">how it works</div>
-    <h2 class="fade">Ask. Get the answer <em>and</em> the evidence.</h2>
-    <div class="cards3">
-      <div class="hc fade d1">
-        <svg class="ic" viewBox="0 0 44 44" fill="none"><rect x="3" y="6" width="38" height="24" rx="12" fill="#fffdf9" stroke="#cbb98f" stroke-width="2"/><path d="M14 30l-4 8 12-8" fill="#fffdf9" stroke="#cbb98f" stroke-width="2"/><circle cx="15" cy="18" r="2.4" fill="#c76a00"/><circle cx="23" cy="18" r="2.4" fill="#c76a00"/><circle cx="31" cy="18" r="2.4" fill="#c76a00"/></svg>
-        <h3>Ask in plain words</h3>
-        <p>No dashboards to learn, no queries to write. "Which wells are down?" or "any late spill reports?" - the copilot works out which records to pull.</p>
-      </div>
-      <div class="hc fade d2">
-        <svg class="ic" viewBox="0 0 44 44" fill="none"><rect x="8" y="4" width="28" height="36" rx="5" fill="#fffdf9" stroke="#cbb98f" stroke-width="2"/><path d="M14 14h16M14 20h16M14 26h10" stroke="#cbb98f" stroke-width="2" stroke-linecap="round"/><path d="M15 33l3 3 6-6" stroke="#2e7d4f" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        <h3>Rules, not guesses</h3>
-        <p>The operating rules - producing thresholds, spill classes, filing deadlines - are read from the fleet manuals and applied by a deterministic engine. Numbers come from records, never from the model's memory.</p>
-      </div>
-      <div class="hc fade d3">
-        <svg class="ic" viewBox="0 0 44 44" fill="none"><path d="M22 6a12 12 0 100 24 12 12 0 000-24z" fill="#fffdf9" stroke="#cbb98f" stroke-width="2"/><path d="M22 14v8l6 4" stroke="#c76a00" stroke-width="2.4" stroke-linecap="round"/><path d="M10 36c3-3 7-4 12-4s9 1 12 4" stroke="#cbb98f" stroke-width="2" stroke-linecap="round"/></svg>
-        <h3>It remembers corrections</h3>
-        <p>Tell it "that reading was wrong, the real value is 41 °C" and it keeps the original, records who corrected it and why, and uses the correction from then on - at exactly the scope you meant.</p>
-      </div>
+  <section class="hero card fade d1">
+    <div class="ghost">01</div>
+    <div class="top">
+      <span class="tag">live field data</span>
+      <span class="toggle"><span>OCT</span><span class="on">17</span></span>
+      <span class="caps">field intelligence</span>
+      <span class="bracket">&#8599;</span>
+    </div>
+    <h1>every well,<br>one question away<span class="dot">.</span></h1>
+    <p class="sub">Ask in plain words which wells stopped producing, which spills are late to report, who broke which rule. The copilot reads the live field records and answers in seconds, with the exact records cited.</p>
+    <div class="ctaRow">
+      <a class="pill" href="/chat">start asking</a>
+      <span class="arrow">&#8599;</span>
+    </div>
+    <div class="art">
+      <svg viewBox="0 0 1000 420" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Pump jacks in a green field">
+        <defs>
+          <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cfe3ee"/><stop offset=".7" stop-color="#e9f0e2"/><stop offset="1" stop-color="#eef3e4"/></linearGradient>
+        </defs>
+        <rect width="1000" height="420" fill="url(#sky)"/>
+        <circle cx="760" cy="96" r="46" fill="#f6e8b8"/><circle cx="760" cy="96" r="66" fill="#f6e8b8" opacity=".35"/>
+        <path d="M0 210 Q 220 150 460 192 T 1000 180 V420 H0 Z" fill="#b5d99a"/>
+        <path d="M0 278 Q 260 226 540 262 T 1000 250 V420 H0 Z" fill="#8fc06e"/>
+        <path d="M0 352 Q 300 316 620 344 T 1000 336 V420 H0 Z" fill="#6fa84f"/>
+        <g transform="translate(300,368) scale(1.15)" fill="#1c2420">
+          <rect x="-86" y="0" width="172" height="12" rx="3"/>
+          <polygon points="-52,0 -22,-96 -12,-96 -40,0"/><polygon points="8,0 38,-96 28,-96 -2,0"/>
+          <rect x="-30" y="-104" width="60" height="12" rx="4"/>
+          <polygon points="-92,-116 58,-92 58,-80 -92,-104"/>
+          <path d="M -92,-116 q-24,6 -22,34 l14,4 q3,-20 10,-26 Z"/>
+          <circle cx="58" cy="-86" r="17"/><rect x="52" y="-72" width="10" height="58" rx="4"/><rect x="-108" y="-64" width="9" height="64" rx="3"/>
+        </g>
+        <g transform="translate(660,330) scale(.62)" fill="#2a352c">
+          <rect x="-86" y="0" width="172" height="12" rx="3"/>
+          <polygon points="-52,0 -22,-96 -12,-96 -40,0"/><polygon points="8,0 38,-96 28,-96 -2,0"/>
+          <rect x="-30" y="-104" width="60" height="12" rx="4"/>
+          <polygon points="-92,-116 58,-92 58,-80 -92,-104"/>
+          <path d="M -92,-116 q-24,6 -22,34 l14,4 q3,-20 10,-26 Z"/>
+          <circle cx="58" cy="-86" r="17"/><rect x="52" y="-72" width="10" height="58" rx="4"/>
+        </g>
+        <g transform="translate(880,318)" stroke="#2a352c" stroke-width="5" fill="none" opacity=".9">
+          <path d="M-34 0 L0 -140 L34 0"/><path d="M-24 -44 H24 M-15 -86 H15 M-8 -120 H8" stroke-width="4"/>
+        </g>
+        <g fill="#33402f"><path d="M140 96 q8 -8 16 0 q-8 -3 -16 0 Z"/><path d="M172 82 q7 -7 14 0 q-7 -3 -14 0 Z"/></g>
+      </svg>
+      <div class="loc">&#8857; Northeast Block 8, live records</div>
+      <div class="chip">200 wells &middot; streaming</div>
+    </div>
+    <div class="presets">
+      <span class="caps lbl">try asking</span>
+      <a class="preset dark" href="/chat?q=Which wells are not producing right now?">which wells are down?</a>
+      <a class="preset" href="/chat?q=Any spills in the last 90 days? How much oil?">spills this quarter</a>
+      <a class="preset" href="/chat?q=Any overdue spill reports or repairs?">overdue compliance</a>
+      <a class="preset" href="/chat?q=Show a map of all wells that are down">map of down wells</a>
+    </div>
+    <div class="verify">
+      <span class="caps">every answer verified against the records</span>
+      <div class="track"><div class="fill" style="padding-right:44px">cited, always</div><div class="knob"></div></div>
     </div>
   </section>
 
-  <section class="example">
-    <div class="fade">
-      <div class="kicker">what answers look like</div>
-      <h2>The verdict first,<br>the proof attached.</h2>
-      <p class="side">Every answer names the records it used - inspection IDs, notes, manuals. Click any of them in the chat and the copilot pulls the full record. If two people tell it different things, it says so instead of quietly picking one.</p>
+  <section class="sect fade d2">
+    <div class="head"><span class="caps">02 &middot; how it works</span><h2>ask. get the answer and the evidence.</h2></div>
+    <div class="grid3">
+      <div class="mini"><div class="num">01</div><h3>ask in plain words</h3><p>No dashboards, no queries. "Which wells are down?" or "any late spill reports?" - the copilot works out which records to pull.</p><div class="ar">&#8599;</div></div>
+      <div class="mini"><div class="num">02</div><h3>rules, not guesses</h3><p>Producing thresholds, spill classes and filing deadlines are read from the fleet manuals and applied by a deterministic engine. Numbers come from records, never from the model's memory.</p><div class="ar">&#8599;</div></div>
+      <div class="mini"><div class="num">03</div><h3>it remembers corrections</h3><p>Tell it a reading was wrong and it keeps the original, records who corrected it and why, and uses the correction from then on - at exactly the scope you meant.</p><div class="ar">&#8599;</div></div>
     </div>
-    <div class="excard fade d2">
-      <div class="q">Is WELL-0001 producing oil right now? When was it last inspected?</div>
-      <div class="a">
-        <div class="verdict">● Not producing.</div>
-        Last inspected <b>15 Oct</b> by Ryan Brooks: wellhead only <b>3.2 °C</b> above ambient, below the 15 °C rule for its T200 type. Crew note says it is shut in since 7 Oct for a planned rod string replacement, back around 20 Oct.
-        <div class="chips"><span>INS-0001-0203</span><span>CTX-0001-003</span><span>OM-T200 §9.3</span></div>
-      </div>
-    </div>
+  </section>
+
+  <section class="example card fade d3">
+    <div class="ghost2">03</div>
+    <div class="top" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span class="tag">example answer</span><span class="caps">evidence attached</span></div>
+    <div class="q">is WELL-0001 producing oil right now?</div>
+    <div class="a"><span class="verdict"><i></i>not producing</span><br><br>
+    Last inspected <b>15 Oct</b> by Ryan Brooks: wellhead only <b>3.2 &deg;C</b> above ambient, below the 15 &deg;C rule for its T200 type. Crew note says it is shut in since 7 Oct for a planned rod string replacement, back around 20 Oct.</div>
+    <div class="chips"><span class="caps" style="letter-spacing:.1em">evidence</span><span>INS-0001-0203</span><span>CTX-0001-003</span><span>OM-T200 &sect;9.3</span></div>
+  </section>
+
+  <section class="band fade d3">
+    <span class="br tl">&#9484;</span><span class="br tr">&#9488;</span><span class="br bl">&#9492;</span><span class="br brr">&#9496;</span>
+    <h2>the field is talking.<br>ask it something<span class="dot">.</span></h2>
+    <p>production, downtime, spills, repairs, compliance - one question away</p>
+    <a class="pill" href="/chat">open the copilot</a>
+    <div class="fine">open-weight model (gemma 4) &middot; deterministic rules from the fleet manuals &middot; MIT licensed</div>
   </section>
 </div>
-
-<section class="band">
-  <div class="wrap">
-    <h2 class="fade">The field is talking.<br><em>Ask it something.</em></h2>
-    <p class="fade d1">Production, downtime, spills, repairs, compliance - one question away.</p>
-    <a class="pill fade d2" href="/chat">Open the copilot &rarr;</a>
-    <div class="fine">Runs on an open-weight model (Gemma 4). Every number is computed from the field records and cited. Free and open source (MIT).</div>
-  </div>
-</section>
 </body>
 </html>
