@@ -84,3 +84,29 @@ dataset (e.g. the test set), point `DATA_DIR` at it and delete the old DB.
 records and asserts the expected answers (18/18 on the sample dataset).
 `python scenario_suite.py` drives the same scenarios through the running
 server, including the memory and feedback sequences.
+
+## QA harness
+
+Everything used to test this copilot ships in the repo:
+
+- `verify.py` - deterministic checks of the data layer (production verdicts,
+  spill totals, downtime math, compliance windows), no model needed.
+- `scenario_suite.py` - drives all 18 example scenarios, including the
+  multi-turn memory, correction and conflict chains, through the running
+  server and saves every answer.
+- `qa/check_answers.py` - scores the suite's answers against the expected
+  key facts (well IDs, figures, required and forbidden content, expected
+  visual form).
+- `qa/generalization.py` - copies the dataset with every well, inspection,
+  repair, regulation, note and user ID shifted to new values, ingests it,
+  and checks the pipeline produces the same verdicts under the new IDs.
+  This is the overfitting probe: the rules come from the manuals and the
+  data, not from the sample IDs.
+- `qa/run_all.sh` - all of the above, one command:
+
+  ```bash
+  LLM_BASE_URL=... LLM_MODEL=... LLM_API_KEY=... ./qa/run_all.sh
+  ```
+
+The correction and claim scenarios deliberately mutate the database, so the
+runner always re-ingests clean before the suite.

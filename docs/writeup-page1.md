@@ -146,6 +146,11 @@ expected answers by hand. Five scored runs so far. What actually broke:
   spill totals, user mapping, parsed rules). 7/7 passed, because the rules
   come from the manuals and the data, not from the sample IDs.
 
+The harness itself ships in the repo: the deterministic core checks, the
+18-scenario suite with expected-answer scoring, and the ID-shift probe,
+all behind one command (`qa/run_all.sh`). QA is part of the product, not a
+side activity.
+
 ## What I would do next
 
 Confidence-gated second reads for borderline producing readings (within
