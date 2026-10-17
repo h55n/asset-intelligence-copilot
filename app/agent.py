@@ -69,6 +69,9 @@ class LLMError(Exception):
 
 THOUGHT_RE = re.compile(r'<thought>.*?</thought>', re.S)
 
+RECALL_RE = re.compile(r"(we discussed|we talked|we went over|yesterday|last time|earlier|previously|the other day|our conversation|remember when)", re.I)
+
+
 def _strip_thought(text):
     return THOUGHT_RE.sub('', text or '').strip()
 
@@ -143,6 +146,12 @@ class Agent:
         msgs = [{"role": "system", "content": sys_content}]
         for h in history[-8:]:
             msgs.append({"role": h["role"], "content": h["text"]})
+        if RECALL_RE.search(message):
+            try:
+                rec = self.t.recall_conversation(user_name)
+                message = "[auto-recall - this user's own past conversations, use this to resolve references to earlier discussions; if it is empty, say there is no such earlier conversation]\n" + json.dumps(rec)[:1800] + "\n\n" + message
+            except Exception:
+                pass
         msgs.append({"role": "user", "content": message})
         wells_seen = set(WELL_RE.findall(message.upper()))
         calls_made = []
