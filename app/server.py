@@ -25,12 +25,22 @@ app = FastAPI(title='Asset Intelligence Copilot')
 
 @app.middleware("http")
 async def strip_prefix(request, call_next):
-    pth = request.scope.get("path", "")
-    for pre in ("/api/index.py", "/api/index", "/index.py"):
-        if pth == pre or pth.startswith(pre + "/"):
-            request.scope["path"] = pth[len(pre):] or "/"
-            request.scope["raw_path"] = request.scope["path"].encode()
-            break
+    from urllib.parse import parse_qs, urlencode
+    scope = request.scope
+    qs = scope.get("query_string", b"").decode()
+    q = parse_qs(qs)
+    pth = scope.get("path", "")
+    if "__path" in q:
+        p = q.pop("__path")[0] or "/"
+        scope["path"] = p if p.startswith("/") else "/" + p
+        scope["raw_path"] = scope["path"].encode()
+        scope["query_string"] = urlencode(q, doseq=True).encode()
+    else:
+        for pre in ("/api/index.py", "/api/index", "/index.py"):
+            if pth == pre or pth.startswith(pre + "/"):
+                scope["path"] = pth[len(pre):] or "/"
+                scope["raw_path"] = scope["path"].encode()
+                break
     return await call_next(request)
 
 
