@@ -1,6 +1,7 @@
 import json, os, sys, uuid
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
 from core import Copilot
@@ -54,6 +55,8 @@ class ChatIn(BaseModel):
     user_id: str
     session_id: str | None = None
     message: str
+
+app.mount('/static', StaticFiles(directory=os.path.join(os.path.dirname(__file__), 'static')), name='static')
 
 @app.get('/')
 def index():

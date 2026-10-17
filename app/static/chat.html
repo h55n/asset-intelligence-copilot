@@ -6,144 +6,150 @@
 <title>Asset Intelligence Copilot - chat</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg:#f1f3f0; --card:#ffffff; --panel2:#f6f7f4; --line:#e5e8e3; --line2:#d8dcd5;
-    --ink:#15181c; --text:#2b2f34; --grey:#8b9095; --grey2:#b9bec2;
-    --green:#20b14b; --green-deep:#1e7a3c; --green-soft:#eaf7ee;
-    --grot:"Space Grotesk","Inter",system-ui,sans-serif;
-    --sans:"Inter",system-ui,-apple-system,sans-serif;
+    --bg:#f5f4ef; --side:#edeae2; --ink:#1f1b16; --soft:#55504a; --grey:#8d867c;
+    --line:#e2ddd1; --line2:#d5cfbf; --card:#ffffff; --bubble:#eae5d9; --accent:#c9633c;
+    --serif:"Instrument Serif",Georgia,serif; --sans:"Inter",system-ui,-apple-system,sans-serif;
+    --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
   }
   * { box-sizing:border-box; margin:0; }
+  a { color:inherit; }
   html, body { height:100%; }
-  body { font-family:var(--sans); background:var(--bg); color:var(--text); display:flex; flex-direction:column; font-feature-settings:"tnum";
-    background-image:linear-gradient(var(--line) 1px, transparent 1px),linear-gradient(90deg, var(--line) 1px, transparent 1px);
-    background-size:88px 88px; }
+  body { font-family:var(--sans); background:var(--bg); color:var(--ink); display:flex; -webkit-font-smoothing:antialiased; }
 
-  header { margin:16px 20px 0; display:flex; align-items:center; gap:12px; background:var(--card); border-radius:40px; padding:9px 12px 9px 18px; box-shadow:0 10px 34px rgba(23,32,24,.08); flex:none; }
-  header .home { font:400 18px var(--grot); color:var(--grey); text-decoration:none; padding:2px 6px; }
-  header .home:hover { color:var(--ink); }
-  header .mark { width:26px; height:26px; border-radius:8px; background:var(--ink); display:grid; place-items:center; color:#fff; font:600 12px var(--grot); }
-  header h1 { font:600 15px var(--grot); letter-spacing:.01em; }
-  header .badge { font:500 11px var(--sans); text-transform:uppercase; letter-spacing:.12em; color:var(--grey); border:1px solid var(--line2); border-radius:16px; padding:6px 13px; white-space:nowrap; background:#fff; }
-  header .badge b { color:var(--green-deep); font-weight:600; }
-  header select { margin-left:auto; background:#fff; color:var(--ink); border:1px solid var(--line2); border-radius:20px; padding:8px 14px; font:500 12.5px var(--sans); cursor:pointer; }
-  header select:focus { outline:2px solid #cdeed6; }
+  aside { width:264px; flex:none; background:var(--side); border-right:1px solid var(--line); display:flex; flex-direction:column; padding:18px 14px; }
+  aside .word { font:400 21px var(--serif); padding:4px 8px 16px; text-decoration:none; display:block; }
+  aside .word em { font-style:italic; color:var(--accent); }
+  .newchat { display:flex; align-items:center; gap:8px; width:100%; background:transparent; border:1px solid var(--line2);
+             border-radius:999px; padding:10px 16px; font:500 13px var(--sans); color:var(--ink); cursor:pointer; }
+  .newchat:hover { background:#e6e2d8; }
+  .newchat b { font-weight:400; font-size:16px; line-height:1; }
+  aside .sect { font:500 10.5px var(--sans); letter-spacing:.16em; text-transform:uppercase; color:var(--grey); margin:24px 10px 8px; }
+  .conv { display:block; width:100%; text-align:left; background:transparent; border:0; border-radius:10px; padding:9px 10px;
+          font:400 13px/1.45 var(--sans); color:var(--soft); cursor:pointer; }
+  .conv:hover { background:#e6e2d8; color:var(--ink); }
+  aside .spacer { flex:1; }
+  .me { display:flex; align-items:center; gap:10px; padding:10px; border-top:1px solid var(--line2); }
+  .me .av { width:30px; height:30px; border-radius:50%; background:var(--ink); color:var(--bg); display:grid; place-items:center; font:600 11px var(--sans); flex:none; }
+  .me select { flex:1; min-width:0; background:transparent; border:0; font:500 12.5px var(--sans); color:var(--ink); cursor:pointer; }
+  .me select:focus { outline:none; }
 
-  #chips { display:none; gap:8px; padding:12px 20px 0; overflow-x:auto; flex:none; }
-  #chips .qbtn { white-space:nowrap; }
+  main { flex:1; display:flex; flex-direction:column; min-width:0; }
+  .topbar { display:flex; align-items:center; gap:12px; padding:16px 24px 10px; }
+  .topbar .t { font:400 17px var(--serif); }
+  .topbar .badge { font:500 10.5px var(--sans); letter-spacing:.12em; text-transform:uppercase; color:var(--grey); border:1px solid var(--line2); border-radius:999px; padding:5px 12px; }
+  .topbar .badge b { color:var(--accent); font-weight:600; }
+  .topbar .home { margin-left:auto; font:500 12.5px var(--sans); color:var(--grey); text-decoration:none; }
+  .topbar .home:hover { color:var(--ink); }
 
-  #layout { flex:1; display:grid; grid-template-columns:270px minmax(0,1fr); gap:16px; padding:16px 20px 0; min-height:0; }
+  #chips { display:none; gap:8px; padding:6px 16px 2px; overflow-x:auto; }
+  #chips .conv { white-space:nowrap; border:1px solid var(--line2); border-radius:999px; padding:7px 14px; width:auto; }
 
-  aside { background:var(--card); border-radius:24px; box-shadow:0 14px 44px rgba(23,32,24,.07); padding:20px 16px; overflow-y:auto; }
-  aside .sect { font:600 11px var(--sans); text-transform:uppercase; letter-spacing:.14em; color:var(--grey); margin:18px 8px 10px; }
-  aside .sect:first-child { margin-top:0; }
-  .qbtn { display:block; width:100%; text-align:left; background:#fff; border:1px solid var(--line2); color:var(--text); font:500 12.5px var(--sans); line-height:1.4; padding:10px 15px; border-radius:18px; cursor:pointer; margin-bottom:8px; }
-  .qbtn:hover { border-color:var(--ink); transform:translateY(-1px); }
+  #scroll { flex:1; overflow-y:auto; }
+  #col { max-width:760px; margin:0 auto; padding:24px 24px 20px; display:flex; flex-direction:column; gap:26px; }
+  #scroll::-webkit-scrollbar { width:8px; }
+  #scroll::-webkit-scrollbar-thumb { background:var(--line2); border-radius:4px; }
 
-  #main { display:flex; flex-direction:column; min-width:0; }
-  #chat { flex:1; overflow-y:auto; padding:8px 8px 12px; display:flex; flex-direction:column; gap:18px; scroll-behavior:smooth; }
-  #chat::-webkit-scrollbar, aside::-webkit-scrollbar, #chips::-webkit-scrollbar { width:8px; height:8px; }
-  #chat::-webkit-scrollbar-thumb, aside::-webkit-scrollbar-thumb { background:var(--line2); border-radius:4px; }
+  .msg.user { align-self:flex-end; background:var(--bubble); border-radius:20px; padding:11px 18px; max-width:78%;
+              font-size:14px; line-height:1.6; white-space:pre-wrap; }
+  .msg.bot { align-self:flex-start; width:100%; font-size:15px; line-height:1.75; }
+  .msg.bot .ans b { font-weight:600; }
+  .msg.bot.thinking { color:var(--grey); font-style:italic; }
+  .msg.bot.thinking .dot { display:inline-block; width:7px; height:7px; border-radius:50%; background:var(--accent); margin-right:8px; animation:p 1s infinite alternate; }
+  @keyframes p { from { opacity:.3; } to { opacity:1; } }
 
-  .msg { max-width:820px; width:fit-content; line-height:1.6; font-size:14px; }
-  .msg.user { align-self:flex-end; background:var(--ink); color:#f4f5f3; padding:11px 18px; border-radius:22px 22px 8px 22px; font-size:13.5px; }
-  .msg.bot { align-self:flex-start; min-width:340px; }
-  .msg.bot .who { font:600 10.5px var(--sans); text-transform:uppercase; letter-spacing:.14em; color:var(--grey2); margin-bottom:6px; }
-  .msg.bot .ans { background:var(--card); border-radius:8px 24px 24px 24px; padding:16px 20px; box-shadow:0 12px 36px rgba(23,32,24,.08); }
-  .msg.bot b { color:var(--ink); }
-  .msg.bot.thinking .ans { color:var(--grey); font-style:italic; }
+  .cites { margin-top:12px; display:flex; flex-wrap:wrap; gap:7px; align-items:center; }
+  .cites .lbl { font:500 10px var(--sans); letter-spacing:.14em; text-transform:uppercase; color:var(--grey); margin-right:2px; }
+  .cite { font:500 11px var(--mono); background:#f0ede4; border:1px solid var(--line); color:var(--soft); padding:4px 11px; border-radius:999px; cursor:pointer; }
+  .cite:hover { border-color:var(--ink); color:var(--ink); }
 
-  .calls { margin-top:10px; font-size:12px; color:var(--grey2); }
-  .calls summary { cursor:pointer; list-style:none; font:600 10.5px var(--sans); text-transform:uppercase; letter-spacing:.12em; }
-  .calls summary:hover { color:var(--grey); }
+  .calls { margin-top:10px; font-size:12px; color:var(--grey); }
+  .calls summary { cursor:pointer; list-style:none; font:500 10.5px var(--sans); letter-spacing:.12em; text-transform:uppercase; }
+  .calls summary:hover { color:var(--ink); }
   .calls summary::before { content:'\25B8 '; }
   .calls[open] summary::before { content:'\25BE '; }
-  .calls .tool { font:500 11px ui-monospace,monospace; color:#4c5257; background:#f2f4f1; border:1px solid var(--line2); border-radius:12px; padding:4px 10px; margin:6px 6px 0 0; display:inline-block; }
+  .calls .tool { font:500 11px var(--mono); color:var(--soft); background:#f0ede4; border:1px solid var(--line); border-radius:8px; padding:3px 9px; margin:6px 6px 0 0; display:inline-block; }
 
   .viz { margin-top:14px; }
-  .viz .vt { font:600 11px var(--sans); text-transform:uppercase; letter-spacing:.14em; color:var(--grey); margin-bottom:10px; }
-  table.data { border-collapse:collapse; font-size:12.5px; background:var(--card); border-radius:14px; overflow:hidden; box-shadow:0 4px 16px rgba(23,32,24,.06); }
+  .viz .vt { font:400 19px var(--serif); margin-bottom:10px; }
+  table.data { border-collapse:collapse; font-size:12.5px; background:var(--card); border-radius:12px; overflow:hidden; border:1px solid var(--line); }
   table.data th, table.data td { border:1px solid var(--line); padding:8px 14px; text-align:left; }
-  table.data th { background:var(--panel2); color:var(--ink); font-weight:600; font-size:12px; }
-  .card.v { background:var(--panel2); border:1px solid var(--line); border-radius:18px; padding:16px 22px; display:inline-block; min-width:240px; }
-  .card .big { font:700 20px var(--grot); margin:2px 0 10px; letter-spacing:-.01em; }
-  .card .ok { color:var(--green-deep); } .card .down { color:#c0392b; }
-  .cites { margin-top:14px; display:flex; flex-wrap:wrap; gap:7px; align-items:center; }
-  .cites .lbl { font:600 10.5px var(--sans); text-transform:uppercase; letter-spacing:.12em; color:var(--grey2); margin-right:2px; }
-  .cite { font:500 11px ui-monospace,monospace; background:#f2f4f1; border:1px solid var(--line2); color:#4c5257; padding:5px 12px; border-radius:13px; cursor:pointer; }
-  .cite:hover { border-color:var(--ink); }
-  canvas { background:var(--card); border:1px solid var(--line); border-radius:16px; max-width:100%; height:auto; box-shadow:0 4px 16px rgba(23,32,24,.05); }
+  table.data th { background:#f0ede4; font-weight:600; font-size:12px; }
+  .card.v { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px 22px; display:inline-block; min-width:250px; }
+  .card .big { font:400 20px var(--serif); margin:2px 0 10px; }
+  .card .ok { color:#3d7a4f; } .card .down { color:#b0432e; }
+  canvas { background:var(--card); border:1px solid var(--line); border-radius:14px; max-width:100%; height:auto; }
+  .fu { margin-top:10px; color:var(--accent); font-size:13.5px; }
 
-  #empty { align-self:center; margin:auto; text-align:center; max-width:640px; padding:20px; }
-  #empty .tag { display:inline-block; background:var(--ink); color:#fff; font:500 12px var(--sans); padding:7px 14px; border-radius:16px; margin-bottom:18px; }
-  #empty .art { width:280px; margin:0 auto 20px; border-radius:20px; overflow:hidden; box-shadow:0 16px 44px rgba(23,32,24,.12); }
-  #empty h2 { font:600 34px/1.08 var(--grot); letter-spacing:-.02em; color:var(--ink); margin-bottom:12px; }
-  #empty h2 .dot { color:var(--green); }
-  #empty p { color:var(--grey); font-size:13.5px; line-height:1.7; margin-bottom:24px; }
-  #empty .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:10px; text-align:left; }
-  .ecard { background:var(--card); border:1px solid var(--line2); border-radius:18px; padding:14px 16px; font:500 12.5px var(--sans); color:var(--text); cursor:pointer; box-shadow:0 8px 24px rgba(23,32,24,.06); }
-  .ecard:hover { border-color:var(--ink); transform:translateY(-1px); }
-  .ecard .t { font:600 10.5px var(--sans); text-transform:uppercase; letter-spacing:.14em; color:var(--green-deep); margin-bottom:6px; }
+  #empty { margin:auto; text-align:center; max-width:680px; padding:8vh 24px 20px; }
+  #empty h2 { font:400 clamp(34px,4.6vw,46px)/1.1 var(--serif); margin-bottom:14px; }
+  #empty h2 em { font-style:italic; color:var(--accent); }
+  #empty p { color:var(--soft); font-size:14px; line-height:1.7; margin-bottom:34px; }
+  #empty .cards { display:grid; grid-template-columns:1fr 1fr; gap:10px; text-align:left; }
+  .ecard { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px 18px; cursor:pointer; }
+  .ecard:hover { border-color:var(--ink); }
+  .ecard .t { font:500 10.5px var(--sans); letter-spacing:.14em; text-transform:uppercase; color:var(--accent); margin-bottom:7px; }
+  .ecard .qq { font:400 13.5px/1.5 var(--sans); color:var(--ink); }
 
-  #composer { flex:none; padding:14px 20px 18px; }
-  #composer .box { display:flex; gap:10px; max-width:860px; margin:0 auto; background:var(--card); border-radius:32px; padding:8px 8px 8px 24px; align-items:center; box-shadow:0 14px 44px rgba(23,32,24,.1); }
-  #composer .box:focus-within { box-shadow:0 14px 44px rgba(23,32,24,.1), 0 0 0 2px #cdeed6; }
-  #composer input { flex:1; background:transparent; border:0; color:var(--text); font:400 14px var(--sans); padding:10px 0; outline:none; }
-  #composer input::placeholder { color:var(--grey2); }
-  #composer button { background:var(--ink); border:0; color:#fff; font:600 13px var(--sans); padding:13px 28px; border-radius:24px; cursor:pointer; }
-  #composer button:hover { background:#2a2e33; }
-  #composer button:disabled { background:var(--line2); color:var(--grey); cursor:default; }
+  #composer { flex:none; padding:12px 24px 18px; }
+  #cbox { max-width:760px; margin:0 auto; background:var(--card); border:1px solid var(--line2); border-radius:26px; padding:8px 10px 8px 22px;
+          display:flex; gap:10px; align-items:center; box-shadow:0 2px 14px rgba(60,45,25,.06); }
+  #cbox:focus-within { border-color:#c9c0ab; box-shadow:0 2px 18px rgba(60,45,25,.1); }
+  #cbox input { flex:1; background:transparent; border:0; color:var(--ink); font:400 14.5px var(--sans); padding:10px 0; outline:none; }
+  #cbox input::placeholder { color:var(--grey); }
+  #send { width:38px; height:38px; border-radius:50%; border:0; background:var(--accent); color:#fff; font-size:17px; cursor:pointer; flex:none; line-height:1; }
+  #send:hover { background:#b5562f; }
+  #send:disabled { background:var(--line2); cursor:default; }
+  #fine { max-width:760px; margin:8px auto 0; text-align:center; font:400 11px var(--sans); color:var(--grey); }
 
   @media (max-width:640px) {
-    header { margin:10px 12px 0; padding:8px 10px 8px 14px; gap:8px; }
-    header h1 { font-size:13.5px; white-space:nowrap; }
-    header .badge { display:none; }
-    header select { max-width:130px; text-overflow:ellipsis; padding:7px 10px; font-size:11.5px; }
-    #empty h2 { font-size:26px; }
-    #empty .art { width:220px; }
+    .topbar .badge { display:none; }
+    .topbar .t { font-size:15px; }
   }
-  @media (max-width:1000px) {
-    #layout { grid-template-columns:1fr; padding:12px 12px 0; }
+  @media (max-width:900px) {
     aside { display:none; }
     #chips { display:flex; }
-    #composer { padding:12px 12px 14px; }
+    #col { padding:16px 16px 12px; }
+    #composer { padding:10px 12px 12px; }
+    #empty .cards { grid-template-columns:1fr; }
   }
 </style>
 </head>
 <body>
-<header>
-  <a href="/" class="home" title="back to home">&larr;</a>
-  <div class="mark">Ai</div>
-  <h1>Asset Intelligence Copilot</h1>
-  <span class="badge">field data &middot; <b id="wellCount">live</b></span>
-  <span class="badge opt">open-weight &middot; <b>rules-verified</b></span>
-  <select id="userPicker"></select>
-</header>
-<div id="chips"></div>
-<div id="layout">
-  <aside>
-    <div class="sect">Production</div>
-    <div data-q="prod"></div>
-    <div class="sect">Spills &amp; repairs</div>
-    <div data-q="spill"></div>
-    <div class="sect">Compliance</div>
-    <div data-q="comp"></div>
-  </aside>
-  <div id="main">
-    <div id="chat"></div>
-    <div id="composer">
-      <div class="box">
-        <input id="q" placeholder="ask about a well, downtime, spills, compliance - or tell me something to remember..." autofocus>
-        <button id="send">Ask</button>
-      </div>
-    </div>
+
+<aside>
+  <a class="word" href="/">Asset <em>Intelligence</em></a>
+  <button class="newchat" onclick="newChat()"><b>+</b> New chat</button>
+  <div class="sect">Production</div><div data-q="prod"></div>
+  <div class="sect">Spills &amp; repairs</div><div data-q="spill"></div>
+  <div class="sect">Compliance</div><div data-q="comp"></div>
+  <div class="spacer"></div>
+  <div class="me"><div class="av" id="av">--</div><select id="userPicker"></select></div>
+</aside>
+
+<main>
+  <div class="topbar">
+    <span class="t">Asset Intelligence Copilot</span>
+    <span class="badge">field data &middot; <b id="wellCount">live</b></span>
+    <a class="home" href="/">&larr; home</a>
   </div>
-</div>
+  <div id="chips"></div>
+  <div id="scroll"><div id="col"></div></div>
+  <div id="composer">
+    <div id="cbox">
+      <input id="q" placeholder="Ask about a well, downtime, spills, compliance - or tell me something to remember..." autofocus>
+      <button id="send" title="Send">&#8593;</button>
+    </div>
+    <div id="fine">every answer verified against the records - cited, always</div>
+  </div>
+</main>
+
 <script>
 let USER = null, SESSION = null;
-const chat = document.getElementById('chat');
+const col = document.getElementById('col');
+const scrollEl = document.getElementById('scroll');
 
 const QUICK = {
   prod: ["Which wells are not producing right now?", "Is WELL-0001 producing oil? Why?", "Show a map of all wells that are down", "Compare downtime across wells this quarter"],
@@ -152,7 +158,7 @@ const QUICK = {
 };
 
 function buildQuick() {
-  const mk = (q) => { const b = el('button', 'qbtn'); b.textContent = q; b.onclick = () => ask(q); return b; };
+  const mk = (q) => { const b = el('button', 'conv'); b.textContent = q; b.onclick = () => ask(q); return b; };
   for (const [k, qs] of Object.entries(QUICK)) {
     const host = document.querySelector(`[data-q="${k}"]`);
     qs.forEach(q => host.appendChild(mk(q)));
@@ -164,16 +170,22 @@ function buildQuick() {
 async function loadUsers() {
   const r = await fetch('/api/users').then(r => r.json());
   const sel = document.getElementById('userPicker');
-  sel.innerHTML = r.users.map(u => `<option value="${u.user_id}">${u.name} · ${u.role.replace(/_/g,' ')}</option>`).join('');
+  sel.innerHTML = r.users.map(u => `<option value="${u.user_id}">${u.name} &middot; ${u.role.replace(/_/g,' ')}</option>`).join('');
   USER = localStorage.getItem('aic_user') || r.users[0].user_id;
   sel.value = USER;
-  sel.onchange = () => { USER = sel.value; SESSION = null; localStorage.setItem('aic_user', USER); };
+  sel.onchange = () => { USER = sel.value; SESSION = null; localStorage.setItem('aic_user', USER); setAv(); };
+  setAv();
   const wc = document.getElementById('wellCount');
   if (r.well_count) wc.textContent = r.well_count + ' wells live';
 }
+function setAv() {
+  const t = document.getElementById('userPicker').selectedOptions[0];
+  const name = t ? t.textContent.split(' ').slice(0,2) : ['?'];
+  document.getElementById('av').textContent = name.map(w => w[0]).join('').toUpperCase();
+}
+function newChat() { SESSION = null; col.innerHTML = ''; showEmpty(); }
 
 function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
-
 function md(t) {
   return t.replace(/&/g,'&amp;').replace(/</g,'&lt;')
           .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
@@ -186,13 +198,13 @@ function renderViz(v) {
   if (v.title) wrap.appendChild(el('div', 'vt', v.title));
   const d = v.data || {};
   if (v.type === 'card') {
-    const c = el('div', 'card');
-    const prod = d.producing ?? d.producing_now;
-    if (prod !== undefined) c.appendChild(el('div', 'big ' + (prod ? 'ok' : 'down'), prod ? '● Producing' : '● Not producing'));
+    const c = el('div', 'card v');
+    const prod = d.producing ?? d.producing_now ?? d.status;
+    if (prod !== undefined) c.appendChild(el('div', 'big ' + ((prod === true || /producing/i.test(String(prod)) && !/not/i.test(String(prod))) ? 'ok' : 'down'), (typeof prod === 'boolean' ? (prod ? 'Producing' : 'Not producing') : String(prod))));
     for (const [k, val] of Object.entries(d)) {
-      if (['producing','producing_now'].includes(k)) continue;
-      const row = el('div'); row.style.fontSize = '13px'; row.style.marginTop = '3px';
-      row.innerHTML = `<span style="color:var(--dim)">${k.replace(/_/g,' ')}:</span> ${val}`;
+      if (['producing','producing_now','status'].includes(k)) continue;
+      const row = el('div'); row.style.fontSize = '13px'; row.style.marginTop = '3px'; row.style.color = 'var(--soft)';
+      row.textContent = k.replace(/_/g,' ') + ': ' + val;
       c.appendChild(row);
     }
     wrap.appendChild(c);
@@ -202,23 +214,19 @@ function renderViz(v) {
     (d.rows||[]).forEach(r => { const tr2 = el('tr'); r.forEach(c => tr2.appendChild(el('td', null, String(c)))); t.appendChild(tr2); });
     wrap.appendChild(t);
   } else if (v.type === 'line') {
-    const cv = el('canvas'); cv.width = 760; cv.height = 300; wrap.appendChild(cv);
-    drawLine(cv, d);
+    const cv = el('canvas'); cv.width = 720; cv.height = 300; wrap.appendChild(cv); drawLine(cv, d);
   } else if (v.type === 'bar') {
-    const cv = el('canvas'); cv.width = 620; cv.height = 300; wrap.appendChild(cv);
-    drawBar(cv, d);
+    const cv = el('canvas'); cv.width = 600; cv.height = 300; wrap.appendChild(cv); drawBar(cv, d);
   } else if (v.type === 'map') {
-    const cv = el('canvas'); cv.width = 640; cv.height = 420; wrap.appendChild(cv);
-    drawMap(cv, d);
+    const cv = el('canvas'); cv.width = 620; cv.height = 420; wrap.appendChild(cv); drawMap(cv, d);
   } else if (v.type === 'heatmap') {
-    const cv = el('canvas'); cv.width = 760; cv.height = 60 + 30 * ((d.rows||[]).length); wrap.appendChild(cv);
-    drawHeat(cv, d);
+    const cv = el('canvas'); cv.width = 720; cv.height = 60 + 30 * ((d.rows||[]).length); wrap.appendChild(cv); drawHeat(cv, d);
   }
   return wrap;
 }
 
-const COLORS = ['#c76a00','#28557e','#2e7d4f','#b23b3b'];
-const AXTXT = '#6f6a5e', AXLINE = '#ddd5c4';
+const COLORS = ['#c9633c','#2e5e4e','#8d6b3f','#5b6b8c'];
+const AXTXT = '#8d867c', AXLINE = '#e2ddd1';
 function axes(ctx, w, h, pad) {
   ctx.strokeStyle = AXLINE; ctx.lineWidth = 1;
   ctx.beginPath(); ctx.moveTo(pad, 10); ctx.lineTo(pad, h-pad); ctx.lineTo(w-10, h-pad); ctx.stroke();
@@ -231,7 +239,7 @@ function drawLine(cv, d) {
   const X = i => pad + (w - pad - 20) * (xs.length < 2 ? 0 : i / (xs.length - 1));
   const Y = v => h - pad - (h - pad - 20) * (v - min) / (max - min || 1);
   axes(ctx, w, h, pad);
-  ctx.fillStyle = AXTXT; ctx.font = '10px sans-serif';
+  ctx.fillStyle = AXTXT; ctx.font = '10px Inter, sans-serif';
   for (let i = 0; i < xs.length; i += Math.ceil(xs.length/8)) ctx.fillText(xs[i].slice(5), X(i)-12, h-pad+14);
   for (let v = Math.ceil(min); v <= max; v += Math.ceil((max-min)/5)) ctx.fillText(v, 6, Y(v)+3);
   series.forEach((s, si) => {
@@ -241,7 +249,7 @@ function drawLine(cv, d) {
   });
   (d.markers || []).forEach(mk => {
     const i = xs.indexOf(mk.x); if (i < 0) return;
-    ctx.fillStyle = '#b23b3b'; ctx.beginPath(); ctx.arc(X(i), 22, 4, 0, 7); ctx.fill();
+    ctx.fillStyle = '#b0432e'; ctx.beginPath(); ctx.arc(X(i), 22, 4, 0, 7); ctx.fill();
     ctx.fillText(mk.label || 'not producing', X(i) + 8, 26);
   });
 }
@@ -255,7 +263,7 @@ function drawBar(cv, d) {
     const bh = (h - pad - 30) * v / max;
     ctx.fillStyle = COLORS[i % 4];
     ctx.fillRect(pad + i*bw + 8, h - pad - bh, bw - 16, bh);
-    ctx.fillStyle = '#221f1a'; ctx.font = '11px sans-serif';
+    ctx.fillStyle = '#1f1b16'; ctx.font = '11px Inter, sans-serif';
     ctx.fillText(v, pad + i*bw + bw/2 - 8, h - pad - bh - 6);
     ctx.fillStyle = AXTXT; ctx.fillText(labels[i].replace('WELL-','W'), pad + i*bw + 8, h - pad + 14);
   });
@@ -270,12 +278,12 @@ function drawMap(cv, d) {
   const minLo = Math.min(...lons) - 0.01, maxLo = Math.max(...lons) + 0.01;
   const X = lo => pad + (w - 2*pad) * (lo - minLo) / (maxLo - minLo || 1);
   const Y = la => h - pad - (h - 2*pad) * (la - minLa) / (maxLa - minLa || 1);
-  ctx.strokeStyle = '#e8e2d6';
+  ctx.strokeStyle = '#ede9dd';
   for (let i = 0; i < 8; i++) { ctx.beginPath(); ctx.moveTo(pad + i*(w-2*pad)/8, pad); ctx.lineTo(pad + i*(w-2*pad)/8, h-pad); ctx.stroke();
                                 ctx.beginPath(); ctx.moveTo(pad, pad + i*(h-2*pad)/8); ctx.lineTo(w-pad, pad + i*(h-2*pad)/8); ctx.stroke(); }
   pins.forEach(p => {
-    ctx.fillStyle = '#b23b3b'; ctx.beginPath(); ctx.arc(X(p.lon), Y(p.lat), 7, 0, 7); ctx.fill();
-    ctx.fillStyle = '#221f1a'; ctx.font = '11px sans-serif';
+    ctx.fillStyle = '#b0432e'; ctx.beginPath(); ctx.arc(X(p.lon), Y(p.lat), 7, 0, 7); ctx.fill();
+    ctx.fillStyle = '#1f1b16'; ctx.font = '11px Inter, sans-serif';
     ctx.fillText(p.well + (p.label ? ' (' + p.label + ')' : ''), X(p.lon) + 10, Y(p.lat) + 4);
   });
 }
@@ -284,15 +292,15 @@ function drawHeat(cv, d) {
   const rows = d.rows || [], cols = d.cols || [], vals = d.values || [];
   const cw = Math.min(60, (cv.width - 170) / cols.length), ch = 28, x0 = 160, y0 = 34;
   const max = Math.max(...vals.flat(), 1);
-  ctx.font = '11px sans-serif';
+  ctx.font = '11px Inter, sans-serif';
   cols.forEach((c, j) => { ctx.fillStyle = AXTXT; ctx.fillText(c, x0 + j*cw + 8, 22); });
   rows.forEach((r, i) => {
     ctx.fillStyle = AXTXT; ctx.fillText(r, 8, y0 + i*ch + 18);
     (vals[i] || []).forEach((v, j) => {
       const a = v / max;
-      ctx.fillStyle = `rgba(199, 106, 0, ${0.08 + 0.8*a})`;
+      ctx.fillStyle = `rgba(201, 99, 60, ${0.08 + 0.8*a})`;
       ctx.fillRect(x0 + j*cw, y0 + i*ch, cw - 2, ch - 2);
-      ctx.fillStyle = a > 0.55 ? '#ffffff' : '#221f1a';
+      ctx.fillStyle = a > 0.55 ? '#ffffff' : '#1f1b16';
       ctx.fillText(v, x0 + j*cw + cw/2 - 6, y0 + i*ch + 18);
     });
   });
@@ -300,16 +308,16 @@ function drawHeat(cv, d) {
 
 function showEmpty() {
   const e = el('div'); e.id = 'empty';
-  e.innerHTML = `<div class="art" style="width:240px;margin:0 auto 16px;border-radius:18px;overflow:hidden;box-shadow:0 10px 30px rgba(60,45,20,.14);border:1px solid var(--line)"><svg viewBox="0 0 700 340" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="wsky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cfe3ee"/><stop offset=".6" stop-color="#e9f0e2"/><stop offset="1" stop-color="#eef3e4"/></linearGradient></defs><rect width="700" height="340" fill="url(#wsky)"/><circle cx="530" cy="86" r="44" fill="#f6e8b8" opacity=".9"/><circle cx="530" cy="86" r="62" fill="#f6e8b8" opacity=".22"/><path d="M0 190 Q 160 140 340 176 T 700 168 V340 H0 Z" fill="#b5d99a"/><path d="M0 246 Q 200 206 420 236 T 700 226 V340 H0 Z" fill="#8fc06e"/><g transform="translate(235,296)" fill="#1c2420"><rect x="-86" y="0" width="172" height="12" rx="3"/><polygon points="-52,0 -22,-96 -12,-96 -40,0"/><polygon points="8,0 38,-96 28,-96 -2,0"/><rect x="-30" y="-104" width="60" height="12" rx="4"/><polygon points="-92,-116 58,-92 58,-80 -92,-104"/><path d="M -92,-116 q-24,6 -22,34 l14,4 q3,-20 10,-26 Z"/><circle cx="58" cy="-86" r="17"/><rect x="52" y="-72" width="10" height="58" rx="4"/><rect x="-108" y="-64" width="9" height="64" rx="3"/></g><g transform="translate(500,272) scale(.5)" fill="#2a352c"><rect x="-86" y="0" width="172" height="12" rx="3"/><polygon points="-52,0 -22,-96 -12,-96 -40,0"/><polygon points="8,0 38,-96 28,-96 -2,0"/><rect x="-30" y="-104" width="60" height="12" rx="4"/><polygon points="-92,-116 58,-92 58,-80 -92,-104"/><path d="M -92,-116 q-24,6 -22,34 l14,4 q3,-20 10,-26 Z"/><circle cx="58" cy="-86" r="17"/><rect x="52" y="-72" width="10" height="58" rx="4"/></g></svg></div><div class='tag'>live field data</div><h2>ask the field anything<span class='dot'>.</span></h2>
+  e.innerHTML = `<h2>Ask the field <em>anything.</em></h2>
     <p>Answers come straight from the live well records - inspections, temperatures, spills, repairs and compliance - with the exact records cited. You can also tell me field updates to remember, like a corrected temperature.</p>
     <div class="cards">
-      <div class="ecard" data-qq="Is WELL-0001 producing oil right now? Why?"><div class="t">Production</div>Is WELL-0001 producing oil right now? Why?</div>
-      <div class="ecard" data-qq="Which spills in the last 90 days were not contained in time?"><div class="t">Spills</div>Which recent spills were not contained in time?</div>
-      <div class="ecard" data-qq="Show a map of all wells that are not producing."><div class="t">Map</div>Show a map of all wells that are down</div>
-      <div class="ecard" data-qq="Any overdue spill reports or repairs?"><div class="t">Compliance</div>Any overdue spill reports or repairs?</div>
+      <div class="ecard" data-qq="Is WELL-0001 producing oil right now? Why?"><div class="t">Production</div><div class="qq">Is WELL-0001 producing oil right now? Why?</div></div>
+      <div class="ecard" data-qq="Which spills in the last 90 days were not contained in time?"><div class="t">Spills</div><div class="qq">Which recent spills were not contained in time?</div></div>
+      <div class="ecard" data-qq="Show a map of all wells that are not producing."><div class="t">Map</div><div class="qq">Show a map of all wells that are down</div></div>
+      <div class="ecard" data-qq="Any overdue spill reports or repairs?"><div class="t">Compliance</div><div class="qq">Any overdue spill reports or repairs?</div></div>
     </div>`;
   e.querySelectorAll('.ecard').forEach(c => c.onclick = () => ask(c.dataset.qq));
-  chat.appendChild(e);
+  col.appendChild(e);
 }
 
 function addMsg(role, text, payload) {
@@ -317,7 +325,6 @@ function addMsg(role, text, payload) {
   const m = el('div', 'msg ' + (role === 'user' ? 'user' : 'bot'));
   if (role === 'user') { m.innerHTML = md(text); }
   else {
-    const who = el('div', 'who'); who.textContent = 'copilot'; m.appendChild(who);
     const ans = el('div', 'ans'); ans.innerHTML = md(text); m.appendChild(ans);
     if (payload && payload.viz) { const v = renderViz(payload.viz); if (v) ans.appendChild(v); }
     if (payload && payload.citations && payload.citations.length) {
@@ -337,9 +344,9 @@ function addMsg(role, text, payload) {
       names.forEach(n => det.appendChild(el('span', 'tool', n)));
       ans.appendChild(det);
     }
-    if (payload && payload.follow_up) { const f = el('div'); f.style.marginTop = '8px'; f.style.color = 'var(--accent)'; f.innerHTML = md(payload.follow_up); ans.appendChild(f); }
+    if (payload && payload.follow_up) { const f = el('div', 'fu'); f.innerHTML = md(payload.follow_up); ans.appendChild(f); }
   }
-  chat.appendChild(m); chat.scrollTop = chat.scrollHeight;
+  col.appendChild(m); scrollEl.scrollTop = scrollEl.scrollHeight;
   return m;
 }
 
@@ -350,16 +357,17 @@ async function ask(text) {
   addMsg('user', text);
   const thinking = addMsg('bot', 'checking the records...');
   thinking.classList.add('thinking');
+  thinking.querySelector('.ans').insertAdjacentHTML('afterbegin', '<span class="dot"></span>');
   try {
     const r = await fetch('/api/chat', {method: 'POST', headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({user_id: USER, session_id: SESSION, message: text})}).then(r => r.json());
     thinking.remove();
-    if (r.error) { addMsg('bot', r.error).classList.add('err'); return; }
+    if (r.error) { addMsg('bot', r.error); return; }
     SESSION = r.session_id;
     addMsg('bot', r.answer || '(no answer)', r);
   } catch (e) {
     thinking.remove();
-    addMsg('bot', 'network error: ' + e).classList.add('err');
+    addMsg('bot', 'network error: ' + e);
   } finally {
     document.getElementById('send').disabled = false;
     document.getElementById('q').focus();

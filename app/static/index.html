@@ -6,197 +6,158 @@
 <title>Asset Intelligence Copilot</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg:#f1f3f0; --card:#ffffff; --line:#e5e8e3; --line2:#d8dcd5;
-    --ink:#15181c; --grey:#8b9095; --grey2:#b9bec2;
-    --green:#20b14b; --green-deep:#1e7a3c; --olive:#8a9a2d;
-    --grot:"Space Grotesk","Inter",system-ui,sans-serif;
-    --sans:"Inter",system-ui,-apple-system,sans-serif;
-    --caps:11px/1.4 var(--sans); 
+    --bg:#f5f3ef; --ink:#1b120c; --ink-soft:#4a3f36; --grey:#8a7f73; --line:#e3ddd2;
+    --card:#ffffff; --accent:#c9633c; --dark:#1b120c; --ivory:#f5f3ef;
+    --serif:"Instrument Serif",Georgia,serif; --sans:"Inter",system-ui,-apple-system,sans-serif;
   }
   * { box-sizing:border-box; margin:0; }
-  body { font-family:var(--sans); background:var(--bg); color:var(--ink);
-    background-image:linear-gradient(var(--line) 1px, transparent 1px),linear-gradient(90deg, var(--line) 1px, transparent 1px);
-    background-size:88px 88px; }
-  .wrap { max-width:1080px; margin:0 auto; padding:0 26px; }
-  .caps { font:var(--caps); text-transform:uppercase; letter-spacing:.14em; color:var(--grey); font-weight:600; }
-  .card { background:var(--card); border-radius:30px; box-shadow:0 24px 70px rgba(23,32,24,.09), 0 2px 8px rgba(23,32,24,.05); }
+  body { font-family:var(--sans); background:var(--bg); color:var(--ink); -webkit-font-smoothing:antialiased; }
+  a { color:inherit; }
 
-  nav { margin:22px auto 0; max-width:1080px; padding:0 26px; display:flex; }
-  nav .bar { flex:1; display:flex; align-items:center; gap:12px; background:var(--card); border-radius:40px; padding:10px 12px 10px 22px; box-shadow:0 10px 34px rgba(23,32,24,.08); }
-  nav .mark { width:26px;height:26px;border-radius:8px;background:var(--ink);display:grid;place-items:center;color:#fff;font:600 12px var(--grot); }
-  nav .name { font:600 15px var(--grot); letter-spacing:.01em; }
-  nav .cta { margin-left:auto; background:var(--ink); color:#fff; text-decoration:none; font:600 13px var(--sans); padding:11px 22px; border-radius:24px; }
-  nav .cta:hover { background:#2a2e33; }
+  .bar { display:flex; align-items:center; justify-content:space-between; padding:22px 28px; }
+  .word { font:600 13px var(--sans); letter-spacing:.34em; text-transform:uppercase; }
+  .pill { display:inline-block; background:var(--ink); color:var(--ivory); text-decoration:none;
+          font:500 13.5px var(--sans); padding:12px 24px; border-radius:999px; border:0; cursor:pointer; }
+  .pill:hover { background:#33241a; }
+  .pill.ghost { background:transparent; color:var(--ink); border:1px solid var(--ink); }
+  .pill.ghost:hover { background:var(--ink); color:var(--ivory); }
+  .pill.light { background:var(--ivory); color:var(--ink); }
+  .pill.light:hover { background:#fff; }
 
-  .hero { position:relative; margin-top:26px; padding:34px 40px 40px; }
-  .hero .ghost { position:absolute; right:26px; top:-30px; font:700 190px var(--grot); color:rgba(21,24,28,.05); line-height:1; pointer-events:none; }
-  .hero .top { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
-  .tag { background:var(--ink); color:#fff; font:500 12px var(--sans); padding:7px 14px; border-radius:16px; }
-  .toggle { display:flex; background:#fff; border:1.5px solid var(--ink); border-radius:16px; overflow:hidden; font:600 12px var(--sans); }
-  .toggle span { padding:6px 12px; }
-  .toggle .on { background:var(--ink); color:#fff; }
-  .hero .bracket { margin-left:auto; color:var(--ink); font:400 22px var(--grot); }
-  h1 { font:600 clamp(38px,5.4vw,62px)/1.04 var(--grot); letter-spacing:-.02em; margin-top:26px; max-width:560px; }
-  h1 .dot { color:var(--green); }
-  .sub { margin-top:16px; color:var(--grey); font-size:15px; line-height:1.65; max-width:480px; }
-  .ctaRow { margin-top:24px; display:flex; gap:14px; align-items:center; flex-wrap:wrap; }
-  .ctaRow .pill { background:var(--ink); color:#fff; text-decoration:none; font:600 14px var(--sans); padding:14px 28px; border-radius:26px; box-shadow:0 10px 26px rgba(21,24,28,.2); }
-  .ctaRow .pill:hover { transform:translateY(-2px); }
-  .ctaRow .arrow { font:400 26px var(--grot); color:var(--ink); }
-  .art { margin-top:28px; border-radius:22px; overflow:hidden; position:relative; }
-  .art svg { display:block; width:100%; height:auto; }
-  .art .loc { position:absolute; left:16px; bottom:14px; color:#fff; font:500 12.5px var(--sans); text-shadow:0 1px 6px rgba(0,0,0,.35); display:flex; gap:6px; align-items:center; }
-  .art .chip { position:absolute; right:14px; top:14px; background:rgba(255,255,255,.92); border-radius:14px; padding:7px 13px; font:600 11.5px var(--sans); color:var(--ink); }
+  .hero { text-align:center; padding:8vh 24px 60px; }
+  .kicker { font:500 11.5px var(--sans); letter-spacing:.22em; text-transform:uppercase; color:var(--grey); }
+  .hero h1 { font:400 clamp(54px, 8.6vw, 118px)/1.02 var(--serif); letter-spacing:-.01em; margin:26px 0 30px; }
+  .hero h1 em { font-style:italic; }
+  .hero p.sub { max-width:560px; margin:0 auto; font-size:15px; line-height:1.75; color:var(--ink-soft); }
+  .marks { display:flex; flex-wrap:wrap; gap:14px 34px; justify-content:center; margin-top:44px; }
+  .marks span { font:500 11px var(--sans); letter-spacing:.16em; text-transform:uppercase; color:var(--ink-soft); display:flex; align-items:center; gap:8px; }
+  .marks i { width:6px; height:6px; border-radius:50%; background:var(--accent); display:inline-block; }
 
-  .presets { margin-top:18px; display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
-  .presets .lbl { margin-right:4px; }
-  .preset { background:#fff; border:1px solid var(--line2); color:var(--ink); font:500 12.5px var(--sans); padding:9px 18px; border-radius:20px; text-decoration:none; }
-  .preset:hover { border-color:var(--ink); }
-  .preset.dark { background:var(--ink); color:#fff; border-color:var(--ink); }
+  .imgwrap { margin:0 24px; border-radius:20px; overflow:hidden; }
+  .imgwrap img { width:100%; display:block; aspect-ratio:16/8.2; object-fit:cover; }
+  .cap { display:flex; justify-content:space-between; margin:12px 30px 0; font:500 11px var(--sans); letter-spacing:.14em; text-transform:uppercase; color:var(--grey); }
 
-  .verify { margin-top:26px; }
-  .verify .track { margin-top:10px; background:#e9ece7; border-radius:16px; height:26px; position:relative; box-shadow:inset 0 1px 3px rgba(23,32,24,.08); }
-  .verify .fill { position:absolute; inset:0; background:linear-gradient(90deg,#25c051,#1da844); border-radius:16px; display:flex; align-items:center; justify-content:flex-end; padding-right:12px; color:#fff; font:600 11.5px var(--sans); }
-  .verify .knob { position:absolute; right:-3px; top:-3px; width:32px; height:32px; border-radius:50%; background:#fff; box-shadow:0 2px 8px rgba(23,32,24,.25); border:2px solid #1da844; }
+  section.block { padding:120px 28px 40px; max-width:1240px; margin:0 auto; }
+  .label { font:500 11.5px var(--sans); letter-spacing:.22em; text-transform:uppercase; color:var(--grey); margin-bottom:22px; }
+  h2.serif { font:400 clamp(38px, 4.6vw, 62px)/1.08 var(--serif); letter-spacing:-.01em; max-width:720px; }
+  .block .pill { margin-top:30px; }
 
-  .sect { margin-top:64px; }
-  .sect .head { display:flex; align-items:baseline; gap:18px; flex-wrap:wrap; }
-  .sect h2 { font:600 clamp(26px,3.2vw,36px)/1.1 var(--grot); letter-spacing:-.015em; }
-  .grid3 { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:22px; }
-  .mini { background:var(--card); border-radius:24px; padding:24px; box-shadow:0 14px 44px rgba(23,32,24,.07); }
-  .mini .num { font:700 13px var(--grot); color:var(--green-deep); }
-  .mini h3 { font:600 19px var(--grot); margin:12px 0 8px; letter-spacing:-.01em; }
-  .mini p { color:var(--grey); font-size:13.5px; line-height:1.65; }
-  .mini .ar { margin-top:14px; font:400 18px var(--grot); color:var(--ink); }
+  .ways { display:grid; grid-template-columns:1fr 1fr; gap:0 64px; margin-top:70px; border-top:1px solid var(--line); }
+  .way { display:flex; gap:26px; padding:30px 0; border-bottom:1px solid var(--line); align-items:baseline; }
+  .way .n { font:400 13px var(--serif); font-style:italic; color:var(--grey); min-width:30px; }
+  .way h3 { font:600 15px var(--sans); margin-bottom:8px; }
+  .way p { font:400 21px/1.35 var(--serif); color:var(--ink-soft); }
 
-  .example { margin-top:64px; padding:30px 34px 34px; position:relative; }
-  .example .q { font:600 20px var(--grot); letter-spacing:-.01em; margin-top:18px; }
-  .example .a { margin-top:14px; color:#5b6065; font-size:14.5px; line-height:1.7; max-width:640px; }
-  .example .verdict { display:inline-flex; align-items:center; gap:8px; font:600 14px var(--sans); color:var(--ink); background:#eaf7ee; border:1px solid #cdeed6; padding:7px 14px; border-radius:16px; }
-  .example .verdict i { width:8px; height:8px; border-radius:50%; background:var(--green); }
-  .chips { margin-top:16px; display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
-  .chips span { font:500 11px ui-monospace,monospace; background:#f2f4f1; border:1px solid var(--line2); color:#4c5257; padding:6px 12px; border-radius:14px; }
-  .example .ghost2 { position:absolute; right:30px; bottom:6px; font:700 120px var(--grot); color:rgba(21,24,28,.045); line-height:1; pointer-events:none; }
+  .dark { background:var(--dark); color:var(--ivory); margin-top:110px; padding:110px 28px 90px; }
+  .dark .inner { max-width:1240px; margin:0 auto; }
+  .dark .label { color:#9d8f80; }
+  .dark h2.serif { color:var(--ivory); max-width:860px; }
+  .cards { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-top:64px; }
+  .card-img { position:relative; border-radius:16px; overflow:hidden; aspect-ratio:4/4.6; }
+  .card-img img { width:100%; height:100%; object-fit:cover; display:block; transition:transform .6s ease; }
+  .card-img:hover img { transform:scale(1.04); }
+  .card-img .t { position:absolute; left:22px; bottom:20px; right:22px; font:400 26px/1.15 var(--serif); color:#fff; text-shadow:0 2px 18px rgba(0,0,0,.45); }
 
-  .band { margin:70px 0 60px; background:var(--ink); border-radius:32px; padding:56px 40px; text-align:center; position:relative; overflow:hidden; }
-  .band h2 { color:#fff; font:600 clamp(28px,3.6vw,42px)/1.08 var(--grot); letter-spacing:-.02em; }
-  .band h2 .dot { color:var(--green); }
-  .band p { color:#9aa0a6; margin-top:14px; font-size:14px; }
-  .band .pill { display:inline-block; margin-top:26px; background:var(--green); color:#fff; text-decoration:none; font:600 14px var(--sans); padding:14px 32px; border-radius:26px; }
-  .band .pill:hover { transform:translateY(-2px); }
-  .band .fine { margin-top:26px; font:500 11px ui-monospace,monospace; color:#6b7178; }
-  .band .br { position:absolute; font:400 20px var(--grot); color:#3a3f45; }
-  .band .br.tl { top:18px; left:22px; } .band .br.tr { top:18px; right:22px; } .band .br.bl { bottom:14px; left:22px; } .band .br.brr { bottom:14px; right:22px; }
+  .example { background:var(--card); border-radius:20px; padding:clamp(30px,5vw,64px); margin-top:64px; }
+  .example .q { font:400 clamp(24px,3vw,34px)/1.25 var(--serif); margin:14px 0 22px; }
+  .example .a { font-size:14.5px; line-height:1.8; color:var(--ink-soft); max-width:760px; }
+  .example .a b { color:var(--ink); }
+  .chips { display:flex; flex-wrap:wrap; gap:8px; margin-top:26px; align-items:center; }
+  .chips .lbl { font:500 10.5px var(--sans); letter-spacing:.16em; text-transform:uppercase; color:var(--grey); margin-right:6px; }
+  .chip { font:500 11px ui-monospace,SFMono-Regular,monospace; background:#f2eee6; border:1px solid var(--line); color:var(--ink-soft); padding:6px 12px; border-radius:999px; }
+  .example .go { display:inline-block; margin-top:28px; font:500 13.5px var(--sans); color:var(--accent); text-decoration:none; border-bottom:1px solid var(--accent); padding-bottom:2px; }
 
-  .fade { opacity:0; transform:translateY(16px); animation:rise .7s ease forwards; }
-  .d1{animation-delay:.08s}.d2{animation-delay:.2s}.d3{animation-delay:.34s}
-  @keyframes rise { to { opacity:1; transform:none; } }
-  @media (prefers-reduced-motion: reduce) { .fade { animation:none; opacity:1; transform:none; } }
-  @media (max-width:860px) {
-    .grid3 { grid-template-columns:1fr; }
-    .hero { padding:26px 22px 28px; }
-    .hero .ghost { font-size:120px; top:-14px; }
-    .example { padding:24px 22px 26px; }
-    .band { padding:44px 22px; margin-bottom:40px; }
+  footer { background:var(--dark); color:var(--ivory); margin-top:120px; padding:100px 28px 48px; text-align:center; }
+  footer .big { font:400 clamp(44px,6vw,84px)/1.05 var(--serif); }
+  footer .big a { text-decoration:none; }
+  footer .big a:hover { font-style:italic; }
+  footer .row { display:flex; gap:30px; justify-content:center; margin-top:36px; }
+  footer .row a { font:500 13px var(--sans); color:#c9bcae; text-decoration:none; }
+  footer .row a:hover { color:#fff; }
+  footer .fine { margin-top:80px; font:400 11.5px var(--sans); color:#7d6f61; letter-spacing:.06em; }
+
+  @media (max-width:760px) {
+    .bar { padding:18px 18px; }
+    .hero { padding:6vh 18px 44px; }
+    .imgwrap { margin:0 14px; border-radius:16px; }
+    .imgwrap img { aspect-ratio:4/3.4; }
+    .cap { margin:10px 18px 0; }
+    section.block { padding:80px 18px 20px; }
+    .ways { grid-template-columns:1fr; gap:0; margin-top:50px; }
+    .dark { padding:80px 18px 64px; margin-top:80px; }
+    .cards { grid-template-columns:1fr; gap:14px; margin-top:44px; }
+    .card-img { aspect-ratio:4/3; }
+    footer { padding:70px 18px 36px; margin-top:80px; }
   }
 </style>
 </head>
 <body>
-<nav class="fade"><div class="bar">
-  <div class="mark">Ai</div><div class="name">Asset Intelligence Copilot</div>
-  <a class="cta" href="/chat">open the copilot</a>
-</div></nav>
 
-<div class="wrap">
-  <section class="hero card fade d1">
-    <div class="ghost">01</div>
-    <div class="top">
-      <span class="tag">live field data</span>
-      <span class="toggle"><span>OCT</span><span class="on">17</span></span>
-      <span class="caps">field intelligence</span>
-      <span class="bracket">&#8599;</span>
-    </div>
-    <h1>every well,<br>one question away<span class="dot">.</span></h1>
-    <p class="sub">Ask in plain words which wells stopped producing, which spills are late to report, who broke which rule. The copilot reads the live field records and answers in seconds, with the exact records cited.</p>
-    <div class="ctaRow">
-      <a class="pill" href="/chat">start asking</a>
-      <span class="arrow">&#8599;</span>
-    </div>
-    <div class="art">
-      <svg viewBox="0 0 1000 420" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Pump jacks in a green field">
-        <defs>
-          <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cfe3ee"/><stop offset=".7" stop-color="#e9f0e2"/><stop offset="1" stop-color="#eef3e4"/></linearGradient>
-        </defs>
-        <rect width="1000" height="420" fill="url(#sky)"/>
-        <circle cx="760" cy="96" r="46" fill="#f6e8b8"/><circle cx="760" cy="96" r="66" fill="#f6e8b8" opacity=".35"/>
-        <path d="M0 210 Q 220 150 460 192 T 1000 180 V420 H0 Z" fill="#b5d99a"/>
-        <path d="M0 278 Q 260 226 540 262 T 1000 250 V420 H0 Z" fill="#8fc06e"/>
-        <path d="M0 352 Q 300 316 620 344 T 1000 336 V420 H0 Z" fill="#6fa84f"/>
-        <g transform="translate(300,368) scale(1.15)" fill="#1c2420">
-          <rect x="-86" y="0" width="172" height="12" rx="3"/>
-          <polygon points="-52,0 -22,-96 -12,-96 -40,0"/><polygon points="8,0 38,-96 28,-96 -2,0"/>
-          <rect x="-30" y="-104" width="60" height="12" rx="4"/>
-          <polygon points="-92,-116 58,-92 58,-80 -92,-104"/>
-          <path d="M -92,-116 q-24,6 -22,34 l14,4 q3,-20 10,-26 Z"/>
-          <circle cx="58" cy="-86" r="17"/><rect x="52" y="-72" width="10" height="58" rx="4"/><rect x="-108" y="-64" width="9" height="64" rx="3"/>
-        </g>
-        <g transform="translate(660,330) scale(.62)" fill="#2a352c">
-          <rect x="-86" y="0" width="172" height="12" rx="3"/>
-          <polygon points="-52,0 -22,-96 -12,-96 -40,0"/><polygon points="8,0 38,-96 28,-96 -2,0"/>
-          <rect x="-30" y="-104" width="60" height="12" rx="4"/>
-          <polygon points="-92,-116 58,-92 58,-80 -92,-104"/>
-          <path d="M -92,-116 q-24,6 -22,34 l14,4 q3,-20 10,-26 Z"/>
-          <circle cx="58" cy="-86" r="17"/><rect x="52" y="-72" width="10" height="58" rx="4"/>
-        </g>
-        <g transform="translate(880,318)" stroke="#2a352c" stroke-width="5" fill="none" opacity=".9">
-          <path d="M-34 0 L0 -140 L34 0"/><path d="M-24 -44 H24 M-15 -86 H15 M-8 -120 H8" stroke-width="4"/>
-        </g>
-        <g fill="#33402f"><path d="M140 96 q8 -8 16 0 q-8 -3 -16 0 Z"/><path d="M172 82 q7 -7 14 0 q-7 -3 -14 0 Z"/></g>
-      </svg>
-      <div class="loc">&#8857; Northeast Block 8, live records</div>
-      <div class="chip">200 wells &middot; streaming</div>
-    </div>
-    <div class="presets">
-      <span class="caps lbl">try asking</span>
-      <a class="preset dark" href="/chat?q=Which wells are not producing right now?">which wells are down?</a>
-      <a class="preset" href="/chat?q=Any spills in the last 90 days? How much oil?">spills this quarter</a>
-      <a class="preset" href="/chat?q=Any overdue spill reports or repairs?">overdue compliance</a>
-      <a class="preset" href="/chat?q=Show a map of all wells that are down">map of down wells</a>
-    </div>
-    <div class="verify">
-      <span class="caps">every answer verified against the records</span>
-      <div class="track"><div class="fill" style="padding-right:44px">cited, always</div><div class="knob"></div></div>
-    </div>
-  </section>
-
-  <section class="sect fade d2">
-    <div class="head"><span class="caps">02 &middot; how it works</span><h2>ask. get the answer and the evidence.</h2></div>
-    <div class="grid3">
-      <div class="mini"><div class="num">01</div><h3>ask in plain words</h3><p>No dashboards, no queries. "Which wells are down?" or "any late spill reports?" - the copilot works out which records to pull.</p><div class="ar">&#8599;</div></div>
-      <div class="mini"><div class="num">02</div><h3>rules, not guesses</h3><p>Producing thresholds, spill classes and filing deadlines are read from the fleet manuals and applied by a deterministic engine. Numbers come from records, never from the model's memory.</p><div class="ar">&#8599;</div></div>
-      <div class="mini"><div class="num">03</div><h3>it remembers corrections</h3><p>Tell it a reading was wrong and it keeps the original, records who corrected it and why, and uses the correction from then on - at exactly the scope you meant.</p><div class="ar">&#8599;</div></div>
-    </div>
-  </section>
-
-  <section class="example card fade d3">
-    <div class="ghost2">03</div>
-    <div class="top" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span class="tag">example answer</span><span class="caps">evidence attached</span></div>
-    <div class="q">is WELL-0001 producing oil right now?</div>
-    <div class="a"><span class="verdict"><i></i>not producing</span><br><br>
-    Last inspected <b>15 Oct</b> by Ryan Brooks: wellhead only <b>3.2 &deg;C</b> above ambient, below the 15 &deg;C rule for its T200 type. Crew note says it is shut in since 7 Oct for a planned rod string replacement, back around 20 Oct.</div>
-    <div class="chips"><span class="caps" style="letter-spacing:.1em">evidence</span><span>INS-0001-0203</span><span>CTX-0001-003</span><span>OM-T200 &sect;9.3</span></div>
-  </section>
-
-  <section class="band fade d3">
-    <span class="br tl">&#9484;</span><span class="br tr">&#9488;</span><span class="br bl">&#9492;</span><span class="br brr">&#9496;</span>
-    <h2>the field is talking.<br>ask it something<span class="dot">.</span></h2>
-    <p>production, downtime, spills, repairs, compliance - one question away</p>
-    <a class="pill" href="/chat">open the copilot</a>
-    <div class="fine">open-weight model (gemma 4) &middot; deterministic rules from the fleet manuals &middot; MIT licensed</div>
-  </section>
+<div class="bar">
+  <div class="word">Asset Intelligence</div>
+  <a class="pill" href="/chat">Open the copilot</a>
 </div>
+
+<header class="hero">
+  <div class="kicker">Live field records &middot; 200 wells &middot; Southwest Production</div>
+  <h1>Ask the field<br><em>anything.</em></h1>
+  <p class="sub">A copilot that answers from the well records themselves - inspections, temperatures, spills, repairs and compliance - and cites the exact records behind every answer.</p>
+  <div class="marks">
+    <span><i></i>Cited sources</span>
+    <span><i></i>Cross-session memory</span>
+    <span><i></i>Conflict-aware</span>
+    <span><i></i>Rules-verified</span>
+  </div>
+</header>
+
+<div class="imgwrap"><img src="/static/img/pumpjack.jpg" alt="Pumpjack in the field"></div>
+<div class="cap"><span>Northeast Block 8, live records</span><span>200 wells &middot; streaming</span></div>
+
+<section class="block">
+  <div class="label">What it watches</div>
+  <h2 class="serif">Four ways the copilot keeps the field honest.</h2>
+  <a class="pill" href="/chat">Start asking</a>
+  <div class="ways">
+    <div class="way"><div class="n">01</div><div><h3>Production</h3><p>Which wells are producing, which are down, and exactly why - measured against each pump's own temperature rule.</p></div></div>
+    <div class="way"><div class="n">02</div><div><h3>Spills &amp; repairs</h3><p>Every spill, its volume, whether it was contained in time, and what the repair really cost.</p></div></div>
+    <div class="way"><div class="n">03</div><div><h3>Compliance</h3><p>Overdue reports, missed containment windows and broken rules, flagged against the operating procedures.</p></div></div>
+    <div class="way"><div class="n">04</div><div><h3>Memory &amp; people</h3><p>It remembers what each person told it, keeps conflicting claims on record, and says so when they disagree with the data.</p></div></div>
+  </div>
+</section>
+
+<section class="dark">
+  <div class="inner">
+    <div class="label">In the field</div>
+    <h2 class="serif">Make the field so legible,<br>surprises become rare.</h2>
+    <div class="cards">
+      <div class="card-img"><img src="/static/img/valves.jpg" alt="Valve manifold"><div class="t">Every valve, on record.</div></div>
+      <div class="card-img"><img src="/static/img/tankfarm.jpg" alt="Tank farm from above"><div class="t">Spills, contained or not.</div></div>
+      <div class="card-img"><img src="/static/img/field-aerial.jpg" alt="Aerial view of the field"><div class="t">The whole field, one question away.</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="block">
+  <div class="label">A real answer</div>
+  <div class="example">
+    <div class="q">&ldquo;Is WELL-0001 producing oil right now? When was it last inspected, and by whom?&rdquo;</div>
+    <div class="a">WELL-0001 is <b>not producing oil</b> right now. Its latest inspection on <b>2026-10-15</b> by <b>Ryan Brooks</b> noted the pump jack was not moving, and the wellhead temperature sat 3.2&deg;C above ambient - below the 15&deg;C rule for a T200 pump. An operator note confirms the well has been shut in since 7 October for a planned rod string replacement, expected back around 20 October.</div>
+    <div class="chips"><span class="lbl">Evidence</span><span class="chip">INS-0001-0203</span><span class="chip">CTX-0001-003</span><span class="chip">T200 manual &sect;9.3</span></div>
+    <a class="go" href="/chat?q=Is%20WELL-0001%20producing%20oil%20right%20now%3F%20Why%3F">Ask this in the copilot &rarr;</a>
+  </div>
+</section>
+
+<footer>
+  <div class="big"><a href="/chat">Open the copilot</a></div>
+  <div class="row">
+    <a href="/chat">Chat</a>
+    <a href="https://github.com/h55n/asset-intelligence-copilot">Source</a>
+  </div>
+  <div class="fine">Asset Intelligence Copilot &middot; open source, MIT &middot; answers verified against the records</div>
+</footer>
+
 </body>
 </html>
