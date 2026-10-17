@@ -210,17 +210,21 @@ function renderViz(v) {
     }
     wrap.appendChild(c);
   } else if (v.type === 'table') {
+    if (!(d.columns||[]).length || !(d.rows||[]).length) return null;
     const t = el('table', 'data');
     const tr = el('tr'); (d.columns||[]).forEach(c => tr.appendChild(el('th', null, c))); t.appendChild(tr);
     (d.rows||[]).forEach(r => { const tr2 = el('tr'); r.forEach(c => tr2.appendChild(el('td', null, String(c)))); t.appendChild(tr2); });
     wrap.appendChild(t);
   } else if (v.type === 'line') {
+    if (!(d.series||[]).length || !(d.x||[]).length) return null;
     const cv = el('canvas'); cv.width = 720; cv.height = 300; wrap.appendChild(cv); drawLine(cv, d);
   } else if (v.type === 'bar') {
+    if (!(d.values||[]).length) return null;
     const cv = el('canvas'); cv.width = 600; cv.height = 300; wrap.appendChild(cv); drawBar(cv, d);
   } else if (v.type === 'map') {
     const cv = el('canvas'); cv.width = 620; cv.height = 420; wrap.appendChild(cv); drawMap(cv, d);
   } else if (v.type === 'heatmap') {
+    if (!(d.rows||[]).length || !(d.cols||[]).length) return null;
     const cv = el('canvas'); cv.width = 720; cv.height = 60 + 30 * ((d.rows||[]).length); wrap.appendChild(cv); drawHeat(cv, d);
   }
   return wrap;
