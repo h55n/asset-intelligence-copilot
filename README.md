@@ -7,6 +7,34 @@ manuals, repair reports and human notes.
 
 Built for the FlytBase x AI Hackers Collective Hacktoberfest Hack Day challenge.
 
+## What is unusual here
+
+- **A deterministic rules engine over rules parsed from the manuals.** The
+  15 C / 20 C producing thresholds, downtime counting, spill classes,
+  SR-01/02/03 and RC-01-05 deadlines, and RCA triggers are applied in code
+  with their manual sections cited - not left to the model's judgement.
+- **Conflict-aware memory.** User corrections re-run their consequences
+  (a 4.5 -> 5.4 bbl fix reclassifies the spill and surfaces the missed
+  24 h notice); claims that contradict the data or another person are
+  stored, marked *unconfirmed*, and shown with the disagreeing evidence.
+  Both sides stay on record.
+- **QA is shipped, not claimed.** The 18-scenario suite, an
+  expected-answer checker, and an ID-shifted generalization probe run with
+  one command (`qa/run_all.sh`).
+
+## How this meets each judging criterion
+
+| Criterion | Where it is met | Proof |
+| --- | --- | --- |
+| Full pipeline, end to end | Loader -> rules engine -> agent -> cited answer -> generative UI | `app/ingest.py`, `app/core.py`, `app/agent.py`, `app/static/chat.html` |
+| Part A: all 18 example questions | Automated suite plays every scenario, including the multi-turn chains | `scenario_suite.py`; run log in `qa/` output; expected-answer scoring in `qa/check_answers.py` |
+| Part B: memory, feedback, conflicts | Shared corrections with scope + consequence re-run, shared notes, per-user history, conflict detection | `app/core.py` (corrections/claims/notes), scenario Q12-Q18 in the suite |
+| Data quality and rules | Containment times template-parsed from 616 free-text repair reports (100% coverage); downtime per Dataset Guide, `downtime_hours` never used | `app/ingest.py`, "Rules in code" in `docs/writeup-page1.md` |
+| Generalization to unseen data | Entire dataset re-labelled with shifted IDs, ingested, probed: 7/7 pass - rules come from manuals, not sample IDs | `qa/generalization.py` |
+| Generative UI | Answers carry a validated viz spec rendered as card/table/line/bar/map/heatmap; user-named visual wins; tool-data-only rendering | `app/static/chat.html`, generative-UI section of `docs/writeup-page1.md` |
+| Verification / QA approach | Deterministic checks + expected-answer scoring + generalization probes behind one command | `qa/run_all.sh`, "How I QA'd it" in `docs/writeup-page1.md` |
+| Honest engineering | Open source (MIT), free-tier inference only, no sample-specific tuning | `LICENSE`, `README.md` run section |
+
 ## How it works
 
 ```
