@@ -141,7 +141,7 @@ class Agent:
         except Exception as e:
             return {"error": f"{type(e).__name__}: {e}"}
 
-    def answer(self, user_name, user_id, session_id, message, history, max_rounds=10):
+    def answer(self, user_name, user_id, session_id, message, history, max_rounds=16):
         # single system message: Google's OpenAI-compat endpoint 500s on two
         sys_content = SYSTEM.format(today=self.today) + f"\n\nThe current user is {user_name} ({user_id}). Attribute everything they tell you to them."
         try:
