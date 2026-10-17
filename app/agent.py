@@ -67,8 +67,22 @@ WELL_RE = re.compile(r'WELL-\d{4}', re.I)
 class LLMError(Exception):
     pass
 
+import time as _time
+_last_call = {'at': 0.0, 'tokens': 0}
+TPM_LIMIT = 8000
+
+def _pace():
+    """Token-bucket pacing: after a big call, wait out its share of the per-minute budget."""
+    now = _time.time()
+    owed = _last_call['tokens'] / TPM_LIMIT * 60.0
+    wait = _last_call['at'] + owed - now
+    if wait > 0:
+        _time.sleep(min(wait, 70))
+
 def chat_completion(base_url, api_key, model, messages, tools=None, max_tokens=4000, temperature=0.2, _attempt=0):
     import time
+    if _attempt == 0:
+        _pace()
     body = {"model": model, "messages": messages, "max_tokens": max_tokens, "temperature": temperature}
     if tools:
         body["tools"] = tools
@@ -77,8 +91,11 @@ def chat_completion(base_url, api_key, model, messages, tools=None, max_tokens=4
                                  data=json.dumps(body).encode(),
                                  headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json", "User-Agent": "curl/8.0"})
     try:
-        with urllib.request.urlopen(req, timeout=120) as r:
-            return json.loads(r.read())
+        with urllib.request.urlopen(req, timeout=180) as r:
+            out = json.loads(r.read())
+            _last_call['at'] = _time.time()
+            _last_call['tokens'] = (out.get('usage') or {}).get('total_tokens', 0)
+            return out
     except urllib.error.HTTPError as e:
         body = e.read().decode(errors='replace')
         try:
