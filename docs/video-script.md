@@ -57,14 +57,23 @@ confirm. It does not silently pick a side."
 Re-ask the first question; WELL-0164 drops off the table. "Same question,
 one correction later - the answer changed everywhere, for every user."
 
-## 3:30-4:20 - One harder query (pick one live)
-- "Which rules has WELL-0001 broken in the last 12 months, and what is
-  still open?" (shows compliance: 41-hour late report, the $5,000 open
-  notice, containment time found only inside the repair report)
-- or "Show a heatmap of 2026 spills by area and month" (shows generative
-  visuals at fleet scale)
+## 3:30-4:20 - The generative UI, then one harder query
+Ask: "Show a map of all wells that are down."
+Say: "The same pipeline answers two problems - the data problem and the
+interface problem. Every answer carries a visual spec built only from tool
+data, so the visuals can never invent a number. Ask for a map, you get a
+map - each down well pinned from its recorded coordinates."
 
-## 4:20-4:45 - Close
+Ask: "Show a heatmap of 2026 spills by area and month."
+Say: "A two-dimensional question becomes a heatmap. A comparison becomes a
+bar chart, a trend becomes a line chart with the down days marked. The user
+names the visual, the system picks a sane one when they don't."
+
+Then, if time allows: "Which rules has WELL-0001 broken in the last 12
+months, and what is still open?" (compliance: 41-hour late report, the
+$5,000 open notice, containment time found only inside the repair report)
+
+## 4:20-4:50 - Close
 Say: "Everything runs on free tiers: SQLite, one open model for
 orchestration, no training. The same loader takes the test dataset
 unchanged, which is the point - the system reads the rules from the data
