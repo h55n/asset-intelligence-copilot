@@ -1,11 +1,13 @@
 # Asset Intelligence Copilot
 
-A chat copilot that answers operators' plain-English questions about an oil
-field - "Which wells in my area were down the longest this summer, and why?" -
-correctly and with evidence, across structured records, sensor readings,
-manuals, repair reports and human notes.
+**[Demo video (3:38)](https://drive.google.com/file/d/1TaFzlTgIdy6eGpVX_6NpGdGbvwaT-nRa/view) · [Report - 3-page PDF](https://drive.google.com/file/d/1Q-QoELrKaxvWvJjScU9kYEQh6u_x5JSO/view) · [Live demo](https://asset-intelligence-copilot-one.vercel.app)**
+
+Ask an oil field a plain-English question - "Which wells in my area were down
+the longest this summer, and why?" - and get an answer that is computed from
+the records, cites its evidence, and admits it when the data cannot say.
 
 Built for the FlytBase x AI Hackers Collective Hacktoberfest Hack Day challenge.
+
 
 ## What is unusual here
 
@@ -87,6 +89,25 @@ answers are grounded and cite their evidence.
 The agent returns an answer plus a visualisation spec - status card, table,
 line chart, bar chart, map, or heatmap - chosen by the question (or the
 visual the user named), rendered inline in the chat.
+
+## Results on the final test dataset (600 wells)
+
+Run against the unseen test dataset through the live copilot; the report PDF
+above carries the verbatim outputs. Honestly, including the gaps:
+
+- **Q1, Q2 (trap questions): correct honest refusals.** The dataset has no
+  reservoir pressure readings and no cumulative production volumes, so the
+  copilot said exactly that instead of inventing a map or naming a well -
+  and offered what the data does support.
+- **Q8 memory chain ("Who told you that?"):** a chat correction was recorded
+  as a shared, attributed note dated by its author (Q8.1); a display
+  preference was saved for that user only (Q8.2); hearsay from a second user
+  was recorded as an attributed claim and *not* silently applied (Q8.4).
+- **The honest misses:** Q8.3 (recalled pumps still in the ground) exceeded
+  the free-tier model rate limit in three attempts and is reported as a
+  timeout, not a guessed list; Q8.5 returned empty under the same limits.
+  The remaining questions were still queued behind the answered ones when
+  the report was frozen, and are marked "not run" rather than filled in.
 
 ## Run it
 
