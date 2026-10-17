@@ -132,8 +132,9 @@ class Tools:
         rows = self.c.spills(asset_id=well_id.upper() if well_id else None, area_id=aid,
                              start=start, end=end or self.c.today, real_only=not include_corrected)
         for s in rows:
-            s['evidence'] = [s['inspection_id']] + ([s['correction']['note_id']] if s.get('correction') and s['correction'].get('note_id') else [])
+            s['evidence'] = [s['inspection_id']] + ([s['correction']['note_id']] if s.get('correction') and isinstance(s.get('correction'), dict) and s['correction'].get('note_id') else [])
             s['month'] = s['date'][5:7]
+            s.pop('correction', None); s.pop('volume_correction', None)
         total = round(sum(s['volume_bbl'] or 0 for s in rows if not s['corrected_not_spill']), 1)
         return {'count': len([s for s in rows if not s['corrected_not_spill']]), 'total_bbl': total,
                 'report_threshold_bbl': SPILL_REPORT_THRESHOLD, 'spills': rows}
@@ -295,6 +296,54 @@ class Tools:
         return {'user': user['name'], 'wells_discussed': wells,
                 'recent_messages': [{'role': h['role'], 'text': h['text'][:300], 'wells': h['wells']} for h in hist],
                 'note': "this is only THIS user's own history; never use another user's"}
+
+
+    def get_spill_matrix(self, year=None, start=None, end=None):
+        """Spill counts per area per month - compact, for heatmaps."""
+        if year:
+            start, end = f'{year}-01-01', f'{year}-12-31'
+        areas = self.c.q("SELECT area_id, name FROM areas ORDER BY name")
+        rows, cols, values, totals = [], [], [], {}
+        months = set()
+        per_area = {}
+        for a in areas:
+            counts = {}
+            for s in self.c.spills(area_id=a['area_id'], start=start, end=end or self.c.today):
+                m = s['date'][5:7]
+                counts[m] = counts.get(m, 0) + 1
+                months.add(m)
+            per_area[a['name']] = counts
+        cols = sorted(months)
+        for name, counts in per_area.items():
+            rows.append(name)
+            values.append([counts.get(m, 0) for m in cols])
+            totals[name] = sum(counts.values())
+        return {'rows': rows, 'cols': cols, 'values': values, 'totals': totals,
+                'window': [start, end or self.c.today],
+                'note': 'formal corrections (not-a-spill) already removed',
+                'evidence': ['inspections table', 'context correction notes']}
+
+    def get_containment_breaches(self, area=None, well_id=None, days=None, months=None, limit_h=4.0):
+        """Spills whose containment (from the repair report) exceeded the SOP limit."""
+        if days: start = day((parse_dt(self.c.today) - timedelta(days=days)).isoformat())
+        elif months: start = months_back(self.c.today, months)
+        else: start = None
+        aid = self._area_id(area)[0] if area else None
+        out = []
+        for s in self.c.spills(asset_id=well_id.upper() if well_id else None, area_id=aid,
+                               start=start, end=self.c.today):
+            for m in self.c.q("SELECT * FROM maintenance WHERE triggered_by_inspection_id=?", (s['inspection_id'],)):
+                if m.get('report_file'):
+                    rid = m['report_file'].split('/')[-1][:-3]
+                    rep = self.c.q("SELECT containment_hours FROM reports WHERE report_id=?", (rid,))
+                    ch = rep[0]['containment_hours'] if rep else None
+                    if ch is not None and ch > limit_h:
+                        out.append({'well_id': s['asset_id'], 'inspection_id': s['inspection_id'],
+                                    'date': s['date'], 'volume_bbl': s['volume_bbl'],
+                                    'containment_hours': ch, 'limit_h': limit_h,
+                                    'maintenance_id': m['maintenance_id'], 'report_id': rid,
+                                    'evidence': [rid, s['inspection_id']]})
+        return {'count': len(out), 'breaches': out}
 
     def list_users(self):
         return {'users': self.c.q("SELECT u.user_id, u.name, u.role, t.name AS team FROM users u LEFT JOIN teams t ON t.team_id=u.team_id")}

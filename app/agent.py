@@ -49,6 +49,8 @@ TOOL_SCHEMAS = [
     ("record_shared_note", "Record a fact a user shares for everyone (planned shut-in, status update) tied to a well", {"author_user_id": ("string", ""), "well_id": ("string", ""), "text": ("string", ""), "valid_from": ("string", "YYYY-MM-DD"), "valid_to": ("string", "YYYY-MM-DD")}, ["author_user_id", "well_id", "text"]),
     ("record_claim", "Record a user's statement about a well and assess it against the data; contradictions stay on record", {"author_user_id": ("string", ""), "well_id": ("string", ""), "text": ("string", "")}, ["author_user_id", "well_id", "text"]),
     ("recall_conversation", "Recall the current user's own past conversations (wells discussed, recent messages) - never another user's", {"user_id": ("string", "user name or id")}, ["user_id"]),
+    ("get_spill_matrix", "Spill counts per area per month as a compact matrix - use for heatmaps instead of pulling every spill", {"year": ("integer", ""), "start": ("string", ""), "end": ("string", "")}, []),
+    ("get_containment_breaches", "Spills whose containment time (from repair reports) exceeded the 4 h SOP limit - use for 'not contained in time' questions", {"area": ("string", ""), "well_id": ("string", ""), "days": ("integer", ""), "months": ("integer", "")}, []),
     ("list_users", "List the people who use the copilot", {}, []),
 ]
 
@@ -86,7 +88,7 @@ def chat_completion(base_url, api_key, model, messages, tools=None, max_tokens=4
         if err.get('code') == 'tool_use_failed' and err.get('failed_generation'):
             # model emitted the final JSON as a raw tool call; treat it as the message
             return {"choices": [{"message": {"role": "assistant", "content": err['failed_generation']}}]}
-        if e.code == 429 and _attempt < 8:
+        if e.code == 429 and _attempt < 14:
             import time
             m = re.search(r'try again in ([\d.]+)s', body)
             wait = float(m.group(1)) + 1 if m else min(2 ** _attempt * 5, 60)
