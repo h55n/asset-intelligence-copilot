@@ -1,6 +1,68 @@
 """Load a FlytBase Asset Intelligence dataset folder into SQLite."""
 import json, os, re, sqlite3, sys
 
+WORD_NUM = {'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6}
+
+def _num(tok):
+    return float(WORD_NUM.get(tok.lower(), tok))
+
+def parse_rules(db, fleet):
+    """Extract the load-bearing rules from the fleet manuals/SOPs shipped with the
+    dataset, so the engine follows the documents, not hardcoded values."""
+    rules = []
+    inherit = {}
+    wt = os.path.join(fleet, 'well-types')
+    if os.path.isdir(wt):
+        for fn in sorted(os.listdir(wt)):
+            if not fn.endswith('.md'):
+                continue
+            wtype = fn[:-3]
+            text = open(os.path.join(wt, fn)).read()
+            m = re.search(r'at least\s*\*{0,2}\s*(\d+(?:\.\d+)?)\s*°?\s*C\s*above\s+ambient', text, re.I)
+            if m:
+                rules.append(('well_type', wtype, 'producing_threshold_c', float(m.group(1)),
+                              f'{wtype} manual production temperature rule'))
+            m = re.search(r'(\d+|three|four|five)\s+or more\s*\*{0,2}\s*corrective', text, re.I)
+            if m:
+                rules.append(('well_type', wtype, 'rca_corrective_count', _num(m.group(1)),
+                              f'{wtype} manual RCA rule'))
+            else:
+                inherit[wtype] = re.search(r'[Ss]ame as (T\d+)', text)
+    # manuals that defer to another type ("Same as T200 section 10") inherit its values
+    for wtype, ref in inherit.items():
+        if not ref:
+            continue
+        for field in ('producing_threshold_c', 'rca_corrective_count'):
+            if any(r[1] == wtype and r[2] == field for r in rules):
+                continue
+            donor = [r for r in rules if r[1] == ref.group(1) and r[2] == field]
+            if donor:
+                rules.append(('well_type', wtype, field, donor[0][3], f'{wtype} manual (same as {ref.group(1)})'))
+
+    sop_dir = os.path.join(fleet, 'sops')
+    sops = ''
+    if os.path.isdir(sop_dir):
+        for fn in sorted(os.listdir(sop_dir)):
+            if fn.endswith('.md'):
+                sops += '\n' + open(os.path.join(sop_dir, fn)).read()
+    def grab(pat, field, src):
+        m = re.search(pat, sops, re.I)
+        if m:
+            rules.append(('global', '*', field, float(m.group(1)), src))
+    grab(r'reporting threshold \((\d+(?:\.\d+)?) bbl', 'spill_report_bbl', 'Spill Response SOP reporting threshold')
+    grab(r'\|\s*Major\s*\|\s*(\d+(?:\.\d+)?) bbl or more', 'spill_major_bbl', 'Spill Response SOP severity table')
+    grab(r'written notice\*\*[^.|]*?within \*\*(\d+(?:\.\d+)?) hours\*\*', 'sr01_written_h', 'SR-01 written notice')
+    grab(r'within \*\*(\d+(?:\.\d+)?) hours\*\* for a major spill', 'sr01_major_h', 'SR-01 major notice')
+    grab(r'contained within \*\*(\d+(?:\.\d+)?) hours\*\*', 'sr02_contain_h', 'SR-02 containment')
+    grab(r'verified within\s*\*{0,2}\s*(\d+(?:\.\d+)?)\s*days', 'sr03_verify_d', 'SR-03 verification')
+    grab(r'answered within \*\*(\d+(?:\.\d+)?) days\*\*', 'rc04_response_d', 'RC-04 NOV response')
+    db.execute("CREATE TABLE IF NOT EXISTS parsed_rules (scope_type TEXT, scope_id TEXT, field TEXT, value REAL, source TEXT, PRIMARY KEY (scope_type, scope_id, field))")
+    if rules:
+        db.execute("DELETE FROM parsed_rules")
+    for r in rules:
+        db.execute("INSERT OR REPLACE INTO parsed_rules VALUES (?,?,?,?,?)", r)
+    return len(rules)
+
 SCHEMA = """
 PRAGMA journal_mode=WAL;
 CREATE TABLE IF NOT EXISTS meta(k TEXT PRIMARY KEY, v TEXT);
@@ -79,6 +141,7 @@ def ingest(data_dir, db_path, append=False):
             title = text.split('\n', 1)[0].lstrip('# ').strip()
             db.execute("INSERT OR REPLACE INTO docs VALUES (?,?,?,?,?)", (doc_id, kind, title, f'fleet/{sub}/{fn}', text))
             db.execute("INSERT INTO docs_fts(doc_id, title, text) VALUES (?,?,?)", (doc_id, title, text))
+    n_rules = parse_rules(db, fleet)
     assets_dir = os.path.join(data_dir, 'assets')
     wells = sorted(os.listdir(assets_dir))
     for w in wells:

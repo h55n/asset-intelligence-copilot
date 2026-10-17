@@ -85,6 +85,15 @@ class Copilot:
         r = self.q("SELECT * FROM wells WHERE asset_id=?", (asset_id,))
         return r[0] if r else None
 
+    def rule(self, field, default, scope_type='global', scope_id='*'):
+        """Rule value parsed from the dataset's own manuals/SOPs; falls back to the documented constant."""
+        try:
+            r = self.q("SELECT value FROM parsed_rules WHERE scope_type=? AND scope_id=? AND field=?",
+                       (scope_type, scope_id, field))
+        except Exception:
+            r = []
+        return float(r[0]['value']) if r else default
+
     def threshold(self, well_type):
         """Producing threshold for a well type, honouring well-type rule corrections."""
         c = self.q("""SELECT corrected_value FROM corrections
@@ -92,7 +101,7 @@ class Copilot:
                       ORDER BY id DESC LIMIT 1""", (well_type,))
         if c:
             return float(c[0]['corrected_value']), 'user_correction'
-        return DEFAULT_THRESHOLDS.get(well_type, 15.0), 'manual'
+        return self.rule('producing_threshold_c', DEFAULT_THRESHOLDS.get(well_type, 15.0), 'well_type', well_type), 'manual'
 
     def rca_threshold(self, well_type):
         c = self.q("""SELECT corrected_value, author_user_id FROM corrections
@@ -100,7 +109,7 @@ class Copilot:
                       ORDER BY id DESC LIMIT 1""", (well_type,))
         if c:
             return int(float(c[0]['corrected_value'])), c[0]['author_user_id']
-        return RCA_CORRECTIVE_COUNT, None
+        return int(self.rule('rca_corrective_count', RCA_CORRECTIVE_COUNT, 'well_type', well_type)), None
 
     # ---------- corrections overlay ----------
     def correction_for(self, inspection_id, field):
@@ -207,7 +216,7 @@ class Copilot:
                    'spill_area_pct': i['spill_area_pct'], 'volume_bbl': vol,
                    'ai_est_volume_bbl': i['spill_est_volume_bbl'], 'lat': i['lat'], 'lon': i['lon'],
                    'corrected_not_spill': bool(corr), 'correction': corr, 'volume_correction': vcorr,
-                   'reportable': (vol is not None and vol >= SPILL_REPORT_THRESHOLD and not corr)}
+                   'reportable': (vol is not None and vol >= self.rule('spill_report_bbl', SPILL_REPORT_THRESHOLD) and not corr)}
             if real_only and corr:
                 continue
             out.append(row)
@@ -251,7 +260,7 @@ class Copilot:
                 insp = self.q("SELECT * FROM inspections WHERE inspection_id=?", (s['inspection_id'],))[0]
                 regs = self.q("SELECT * FROM regulatory_events WHERE related_inspection_id=?", (s['inspection_id'],))
                 filed = [r for r in regs if r['event_type'] == 'spill_report_filed']
-                limit = SR01_MAJOR_NOTICE_H if (s['volume_bbl'] or 0) >= MAJOR_SPILL_BBL else SR01_WRITTEN_NOTICE_H
+                limit = self.rule('sr01_major_h', SR01_MAJOR_NOTICE_H) if (s['volume_bbl'] or 0) >= self.rule('spill_major_bbl', MAJOR_SPILL_BBL) else self.rule('sr01_written_h', SR01_WRITTEN_NOTICE_H)
                 if not filed:
                     breaches.append({'asset_id': wid, 'protocol': 'SR-01', 'inspection_id': s['inspection_id'],
                                      'detail': f"reportable spill ({s['volume_bbl']} bbl) on {s['date']} has no written notice on record",
@@ -267,7 +276,7 @@ class Copilot:
                                          'evidence': [filed[0]['event_id']] + [n['event_id'] for n in novs]})
                         for n in novs:
                             resp = [r for r in regs if r['event_type'] == 'nov_response_filed']
-                            due = day((parse_dt(n['date']) + timedelta(days=RC04_NOV_RESPONSE_DAYS)).isoformat())
+                            due = day((parse_dt(n['date']) + timedelta(days=self.rule('rc04_response_d', RC04_NOV_RESPONSE_DAYS))).isoformat())
                             if not resp and due < self.today:
                                 breaches.append({'asset_id': wid, 'protocol': 'RC-04', 'inspection_id': s['inspection_id'],
                                                  'detail': f"notice of violation {n['event_id']} needed a response by {due}; none recorded",
@@ -285,11 +294,11 @@ class Copilot:
                                      'containment_hours': rep[0]['containment_hours'] if rep else None})
                 for rp in reps:
                     ch = rp['containment_hours']
-                    if ch is not None and ch > SR02_CONTAINMENT_H:
+                    if ch is not None and ch > self.rule('sr02_contain_h', SR02_CONTAINMENT_H):
                         breaches.append({'asset_id': wid, 'protocol': 'SR-02', 'inspection_id': s['inspection_id'],
-                                         'detail': f"contained after about {ch} h (limit {SR02_CONTAINMENT_H} h); found in repair report {rp['report_id']}",
+                                         'detail': f"contained after about {ch} h (limit {self.rule('sr02_contain_h', SR02_CONTAINMENT_H)} h); found in repair report {rp['report_id']}",
                                          'evidence': [rp['report_id'], s['inspection_id']]})
-                due = day((parse_dt(s['inspected_at']) + timedelta(days=SR03_VERIFY_DAYS)).isoformat())
+                due = day((parse_dt(s['inspected_at']) + timedelta(days=self.rule('sr03_verify_d', SR03_VERIFY_DAYS))).isoformat())
                 ver = [r for r in regs if r['event_type'] == 'site_inspection' and r['status'] == 'closed']
                 if due < self.today and not ver:
                     open_ver = [r for r in regs if r['event_type'] == 'site_inspection']
