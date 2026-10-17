@@ -161,8 +161,11 @@ class Copilot:
         notes = self.active_notes(asset_id)
         open_repairs = self.q("""SELECT * FROM maintenance WHERE asset_id=? AND completed_at > ? ORDER BY started_at""",
                               (asset_id, self.today + 'T23:59:59Z'))
+        plugged = (w.get('status') == 'plugged_and_abandoned') or (w['recorded_status'] == 'plugged')
         return {'well': w, 'latest_inspection': insp, 'producing': p, 'inspector': inspector,
                 'recorded_status': w['recorded_status'],
+                'status': w.get('status') or 'active', 'plugged': plugged,
+                'decommissioned_on': None,
                 'recorded_status_out_of_date': bool(p) and ((w['recorded_status'] == 'active') != p['producing']),
                 'active_notes': notes, 'open_repairs': open_repairs}
 

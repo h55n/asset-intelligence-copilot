@@ -72,7 +72,8 @@ CREATE TABLE IF NOT EXISTS users(user_id TEXT PRIMARY KEY, name TEXT, role TEXT,
 CREATE TABLE IF NOT EXISTS area_wells(area_id TEXT, asset_id TEXT, PRIMARY KEY(area_id, asset_id));
 CREATE TABLE IF NOT EXISTS wells(asset_id TEXT PRIMARY KEY, name TEXT, well_type TEXT, area_id TEXT, team_id TEXT,
     in_charge_user_id TEXT, lat REAL, lon REAL, installed_on TEXT, recorded_status TEXT,
-    last_inspection_id TEXT, last_inspected_at TEXT, last_inspector_user_id TEXT);
+    last_inspection_id TEXT, last_inspected_at TEXT, last_inspector_user_id TEXT,
+    status TEXT DEFAULT 'active', type_history TEXT, team_history TEXT);
 CREATE TABLE IF NOT EXISTS equipment(asset_id TEXT, equipment_id TEXT, kind TEXT, model TEXT, PRIMARY KEY(asset_id, equipment_id));
 CREATE TABLE IF NOT EXISTS inspections(inspection_id TEXT PRIMARY KEY, asset_id TEXT, inspected_at TEXT,
     inspector_user_id TEXT, method TEXT, ambient_temp_c REAL, wellhead_temp_c REAL,
@@ -95,6 +96,7 @@ CREATE TABLE IF NOT EXISTS reports(report_id TEXT PRIMARY KEY, asset_id TEXT, pa
 CREATE TABLE IF NOT EXISTS docs(doc_id TEXT PRIMARY KEY, kind TEXT, title TEXT, path TEXT, text TEXT);
 CREATE VIRTUAL TABLE IF NOT EXISTS docs_fts USING fts5(doc_id, title, text, tokenize='porter');
 CREATE VIRTUAL TABLE IF NOT EXISTS reports_fts USING fts5(report_id, text, tokenize='porter');
+CREATE TABLE IF NOT EXISTS prefs(user_id TEXT, pref TEXT);
 """
 
 CONTAIN_RE = re.compile(r'contain(?:ed|ment)\s+(?:was\s+)?(?:took\s+)?(?:about\s+|roughly\s+|approximately\s+)?([\d.]+)\s*hours?', re.I)
@@ -150,11 +152,14 @@ def ingest(data_dir, db_path, append=False):
             continue
         md = json.load(open(os.path.join(wdir, 'metadata.json')))
         li = md.get('last_inspection') or {}
-        db.execute("INSERT OR REPLACE INTO wells VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        db.execute("INSERT OR REPLACE INTO wells VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                    (md['asset_id'], md['name'], md['well_type'], md['area_id'], md['team_id'],
                     md.get('in_charge_user_id'), md['location']['lat'], md['location']['lon'],
                     md.get('installed_on'), md.get('recorded_status'),
-                    li.get('inspection_id'), li.get('inspected_at'), li.get('inspector_user_id')))
+                    li.get('inspection_id'), li.get('inspected_at'), li.get('inspector_user_id'),
+                    md.get('status') or 'active',
+                    json.dumps(md.get('type_history')) if md.get('type_history') else None,
+                    json.dumps(md.get('team_history')) if md.get('team_history') else None))
         for e in md.get('equipment', []):
             db.execute("INSERT OR REPLACE INTO equipment VALUES (?,?,?,?)",
                        (md['asset_id'], e['equipment_id'], e['kind'], e['model']))

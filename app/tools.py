@@ -66,9 +66,13 @@ class Tools:
         aid, aname = self._area_id(area)
         if not aid: return {'error': f'unknown area {area}'}
         rows = []
+        plugged = 0
         for w in self.c.q("SELECT asset_id FROM area_wells WHERE area_id=? ORDER BY asset_id", (aid,)):
             st = self.c.well_status(w['asset_id'])
             p = st['producing']
+            if st.get('plugged'):
+                plugged += 1
+                continue
             if only_not_producing and p['producing']:
                 continue
             rows.append({'well_id': w['asset_id'], 'well_type': st['well']['well_type'],
@@ -80,7 +84,11 @@ class Tools:
                                            'started_at': day(r['started_at'])} for r in st['open_repairs'][:3]],
                          'recorded_status_out_of_date': st['recorded_status_out_of_date'],
                          'evidence': [st['latest_inspection']['inspection_id']] if st['latest_inspection'] else []})
-        return {'area': aname, 'count': len(rows), 'wells': rows}
+        out = {'area': aname, 'count': len(rows), 'wells': rows}
+        if plugged:
+            out['plugged_excluded'] = plugged
+            out['note'] = f'{plugged} plugged-and-abandoned well(s) in this area were left out; they are permanently closed.'
+        return out
 
     def get_temperature_series(self, well_id, start=None, end=None, last_weeks=None):
         w = self.c.well(well_id.upper())
@@ -292,6 +300,15 @@ class Tools:
         r['by'] = self._uname(uid)
         r['must_do'] = 'if status is contradicted, tell the user what the data shows, keep both statements on record, and ask for confirmation'
         return r
+
+    def remember_preference(self, author_user_id, text):
+        author = self.c.user_by_name(author_user_id)
+        uid = author['user_id'] if author else author_user_id
+        self.c.db.execute("INSERT INTO prefs VALUES (?,?)", (uid, text))
+        self.c.db.commit()
+        return {'recorded': True, 'for': self._uname(uid), 'preference': text,
+                'scope': 'this user only',
+                'must_do': 'apply this preference in every later answer for this user only; other users are unaffected'}
 
     def recall_conversation(self, user_id, what='wells'):
         user = self.c.user_by_name(user_id)

@@ -52,6 +52,7 @@ TOOL_SCHEMAS = [
     ("get_spill_matrix", "Spill counts per area per month as a compact matrix - use for heatmaps instead of pulling every spill", {"year": ("integer", ""), "start": ("string", ""), "end": ("string", "")}, []),
     ("get_containment_breaches", "Spills whose containment time (from repair reports) exceeded the 4 h SOP limit - use for 'not contained in time' questions", {"area": ("string", ""), "well_id": ("string", ""), "days": ("integer", ""), "months": ("integer", "")}, []),
     ("list_users", "List the people who use the copilot", {}, []),
+    ("remember_preference", "Save a personal display or workflow preference the user asks you to remember for their future answers (e.g. sorting, units); applies to this user only", {"author_user_id": ("string", "user name"), "text": ("string", "the preference, verbatim")}, ["author_user_id", "text"]),
 ]
 
 def build_tools_json():
@@ -143,6 +144,12 @@ class Agent:
     def answer(self, user_name, user_id, session_id, message, history, max_rounds=10):
         # single system message: Google's OpenAI-compat endpoint 500s on two
         sys_content = SYSTEM.format(today=self.today) + f"\n\nThe current user is {user_name} ({user_id}). Attribute everything they tell you to them."
+        try:
+            prefs = [r[0] for r in self.t.c.db.execute("SELECT pref FROM prefs WHERE user_id=?", (user_id,))]
+            if prefs:
+                sys_content += "\n\nThis user's saved preferences - apply them in every answer to this user: " + "; ".join(prefs)
+        except Exception:
+            pass
         msgs = [{"role": "system", "content": sys_content}]
         for h in history[-8:]:
             msgs.append({"role": h["role"], "content": h["text"]})
