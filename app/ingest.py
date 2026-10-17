@@ -47,11 +47,13 @@ def load_jsonl(path):
                 rows.append(json.loads(line))
     return rows
 
-def ingest(data_dir, db_path):
-    if os.path.exists(db_path):
+def ingest(data_dir, db_path, append=False):
+    if os.path.exists(db_path) and not append:
         os.remove(db_path)
+    fresh = not os.path.exists(db_path)
     db = sqlite3.connect(db_path)
-    db.executescript(SCHEMA)
+    if fresh or not append:
+        db.executescript(SCHEMA)
     fleet = os.path.join(data_dir, 'fleet')
     areas = json.load(open(os.path.join(fleet, 'areas.json')))
     for t in areas.get('teams', []):
@@ -143,5 +145,5 @@ def ingest(data_dir, db_path):
     return stats
 
 if __name__ == '__main__':
-    stats = ingest(sys.argv[1], sys.argv[2])
+    stats = ingest(sys.argv[1], sys.argv[2], append='--append' in sys.argv)
     print(json.dumps(stats, indent=1))
