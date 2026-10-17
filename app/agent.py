@@ -110,7 +110,7 @@ def chat_completion(base_url, api_key, model, messages, tools=None, max_tokens=4
         if err.get('code') == 'tool_use_failed' and err.get('failed_generation'):
             # model emitted the final JSON as a raw tool call; treat it as the message
             return {"choices": [{"message": {"role": "assistant", "content": err['failed_generation']}}]}
-        if e.code == 429 and _attempt < 14:
+        if e.code in (429, 500, 502, 503) and _attempt < 14:
             import time
             m = re.search(r'try again in ([\d.]+)s', body)
             wait = float(m.group(1)) + 1 if m else min(2 ** _attempt * 5, 60)
