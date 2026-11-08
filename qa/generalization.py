@@ -8,22 +8,28 @@ not from the sample IDs - this is how we know.
 
 Usage: python qa/generalization.py [sample-data-dir]
 """
-import os, re, shutil, subprocess, sys
+import os, re, shutil, sys, tempfile
+from pathlib import Path
 
-SRC = sys.argv[1] if len(sys.argv) > 1 else 'sample-data'
-DST = '/tmp/copilot-gen-data'
-DB = '/tmp/copilot_gen.db'
+
 
 def shift(text):
     text = re.sub(r'\b(WELL|INS|MNT|REG|CTX)-0(\d{3})', r'\1-9\2', text)
     text = re.sub(r'\bU-(\d{3})\b', r'U-9\1', text)
     return text
 
-def transform():
-    if os.path.exists(DST): shutil.rmtree(DST)
-    for root, dirs, files in os.walk(SRC):
-        rel = os.path.relpath(root, SRC)
-        out_root = os.path.join(DST, shift(rel) if rel != '.' else '')
+def transform(source, destination):
+    source = Path(source)
+    destination = Path(destination)
+    if not source.is_dir():
+        raise FileNotFoundError(f'Dataset directory not found: {source}')
+    if source.resolve() in destination.resolve().parents:
+        raise ValueError('Output must be outside the source dataset')
+    # Never remove a caller-owned path. main() supplies a fresh private workspace.
+    destination.mkdir(parents=True, exist_ok=False)
+    for root, dirs, files in os.walk(source):
+        rel = os.path.relpath(root, source)
+        out_root = os.path.join(destination, shift(rel) if rel != '.' else '')
         os.makedirs(out_root, exist_ok=True)
         for f in files:
             src_f = os.path.join(root, f)
@@ -33,17 +39,16 @@ def transform():
                 with open(dst_f, 'w', encoding='utf-8') as fh: fh.write(shift(data))
             except UnicodeDecodeError:
                 shutil.copyfile(src_f, dst_f)
-    print('shifted dataset at', DST)
+    print('shifted dataset at', destination)
 
-def ingest():
-    if os.path.exists(DB): os.remove(DB)
+def ingest(destination, database):
     sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'app'))
     from ingest import ingest as do_ingest
-    print('ingested:', do_ingest(DST, DB))
+    print('ingested:', do_ingest(destination, database))
 
-def probes():
+def probes(database):
     from core import Copilot
-    c = Copilot(DB)
+    c = Copilot(database)
     ok = fail = 0
     def check(name, cond, extra=''):
         nonlocal ok, fail
@@ -72,6 +77,18 @@ def probes():
     print(f'\n{ok} passed, {fail} failed')
     return fail
 
+def main(argv=None):
+    args = sys.argv[1:] if argv is None else argv
+    source = args[0] if args else 'sample-data'
+    if not Path(source).is_dir():
+        raise FileNotFoundError(f'Dataset directory not found: {source}')
+    with tempfile.TemporaryDirectory(prefix='copilot-generalization-') as workspace:
+        destination = os.path.join(workspace, 'data')
+        database = os.path.join(workspace, 'probe.db')
+        transform(source, destination)
+        ingest(destination, database)
+        return 1 if probes(database) else 0
+
+
 if __name__ == '__main__':
-    transform(); ingest()
-    sys.exit(1 if probes() else 0)
+    sys.exit(main())
