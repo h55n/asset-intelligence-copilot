@@ -97,8 +97,8 @@ class Tools:
             rows = self.c.q("SELECT * FROM inspections WHERE asset_id=? ORDER BY inspected_at DESC LIMIT ?",
                             (w['asset_id'], int(last_weeks)))[::-1]
         else:
-            rows = self.c.q("SELECT * FROM inspections WHERE asset_id=? AND inspected_at>=? AND inspected_at<?||'T23:59:59Z' ORDER BY inspected_at",
-                            (w['asset_id'], start or '1900-01-01', end or self.c.today))
+            rows = self.c.q("SELECT * FROM inspections WHERE asset_id=? AND inspected_at>=? AND substr(inspected_at, 1, 10)<=? ORDER BY inspected_at",
+                            (w['asset_id'], start or '1900-01-01', day(end or self.c.today)))
         thr, src = self.c.threshold(w['well_type'])
         pts = []
         for i in rows:

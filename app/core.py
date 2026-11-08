@@ -187,8 +187,8 @@ class Copilot:
     def downtime(self, asset_id, start, end):
         """Days down in [start, end] by weekly inspections (each non-producing inspection = 7 days)."""
         w = self.well(asset_id)
-        rows = self.q("""SELECT * FROM inspections WHERE asset_id=? AND inspected_at>=? AND inspected_at<? || 'T23:59:59Z'
-                         ORDER BY inspected_at""", (asset_id, start, end))
+        rows = self.q("""SELECT * FROM inspections WHERE asset_id=? AND inspected_at>=? AND substr(inspected_at, 1, 10)<=?
+                         ORDER BY inspected_at""", (asset_id, start, day(end)))
         down = []
         for i in rows:
             p = self.producing(i, w['well_type'])
@@ -208,7 +208,7 @@ class Copilot:
         if start:
             sql += " AND i.inspected_at>=?"; args.append(start)
         if end:
-            sql += " AND i.inspected_at<? || 'T23:59:59Z'"; args.append(end)
+            sql += " AND substr(i.inspected_at, 1, 10)<=?"; args.append(day(end))
         sql += " ORDER BY i.inspected_at"
         out = []
         for i in self.q(sql, args):
@@ -235,7 +235,7 @@ class Copilot:
         if start:
             sql += " AND m.started_at>=?"; args.append(start)
         if end:
-            sql += " AND m.started_at<? || 'T23:59:59Z'"; args.append(end)
+            sql += " AND substr(m.started_at, 1, 10)<=?"; args.append(day(end))
         if mtype:
             sql += " AND m.maintenance_type=?"; args.append(mtype)
         if equipment:
@@ -322,8 +322,8 @@ class Copilot:
                          group_concat(m.maintenance_id) AS ids
                          FROM maintenance m JOIN wells w ON w.asset_id=m.asset_id
                          WHERE m.maintenance_type='corrective' AND m.equipment_kind=?
-                         AND m.started_at>=? """ + ("AND w.area_id=?" if area_id else "") +
-                      " GROUP BY m.asset_id", (equipment, start) + ((area_id,) if area_id else ()))
+                         AND m.started_at>=? AND substr(m.started_at, 1, 10)<=? """ + ("AND w.area_id=?" if area_id else "") +
+                      " GROUP BY m.asset_id", (equipment, start, self.today) + ((area_id,) if area_id else ()))
         out = []
         for r in rows:
             thr, author = self.rca_threshold(r['well_type'])
